@@ -101,12 +101,13 @@ function ArtPanel({ work, active, onSelect }: { work: Work; active: boolean; onS
 
   const select = (event: ThreeEvent<MouseEvent>) => {
     event.stopPropagation();
+    if (event.delta > 6) return;
     onSelect(work);
   };
 
   return (
     <group position={work.position} rotation={[0, work.rotation, 0]}>
-      <mesh position={[0, 0, -0.08]}>
+      <mesh position={[0, 0, -0.08]} onClick={select}>
         <boxGeometry args={[work.size[0] + 0.18, work.size[1] + 0.18, 0.14]} />
         <meshStandardMaterial color="#0a0a09" roughness={0.5} metalness={0.45} />
         <Edges color={active || hovered ? '#ded8ca' : '#57544e'} threshold={15} />
@@ -256,7 +257,7 @@ export default function Home() {
   const [sound, setSound] = useState(false);
   const [help, setHelp] = useState(true);
   const [look, setLook] = useState({ x: 0, y: 0 });
-  const drag = useRef<{ x: number; y: number; lastY: number; pointerType: string } | null>(null);
+  const drag = useRef<{ x: number; y: number; lastY: number; pointerType: string; baseX: number; baseY: number } | null>(null);
 
   const currentRoom = progress < 0.47 ? 0 : 1;
   const transitioning = progress > 0.405 && progress < 0.54;
@@ -281,8 +282,7 @@ export default function Home() {
   }, [detail, mode, nearest, progress]);
 
   const beginDrag = (event: React.PointerEvent) => {
-    drag.current = { x: event.clientX, y: event.clientY, lastY: event.clientY, pointerType: event.pointerType };
-    event.currentTarget.setPointerCapture(event.pointerId);
+    drag.current = { x: event.clientX, y: event.clientY, lastY: event.clientY, pointerType: event.pointerType, baseX: look.x, baseY: look.y };
   };
   const moveDrag = (event: React.PointerEvent) => {
     if (!drag.current) return;
@@ -290,15 +290,15 @@ export default function Home() {
       const delta = drag.current.lastY - event.clientY;
       drag.current.lastY = event.clientY;
       walkTo(progress + delta * 0.0018);
-      setLook((value) => ({ ...value, x: clamp((event.clientX - drag.current!.x) / 8, -12, 12) }));
+      setLook((value) => ({ ...value, x: clamp(drag.current!.baseX + (event.clientX - drag.current!.x) / 8, -12, 12) }));
       return;
     }
     setLook({
-      x: clamp((event.clientX - drag.current.x) / 10, -13, 13),
-      y: clamp(-(event.clientY - drag.current.y) / 13, -7, 7),
+      x: clamp(drag.current.baseX + (event.clientX - drag.current.x) / 10, -13, 13),
+      y: clamp(drag.current.baseY - (event.clientY - drag.current.y) / 13, -7, 7),
     });
   };
-  const endDrag = () => { drag.current = null; setLook({ x: 0, y: 0 }); };
+  const endDrag = () => { drag.current = null; };
   const walk = (event: React.WheelEvent) => {
     event.preventDefault();
     walkTo(progress + clamp(event.deltaY, -180, 180) * 0.00058);
@@ -352,7 +352,7 @@ export default function Home() {
         <button className={currentRoom === 1 ? 'active' : ''} onClick={() => jumpToRoom(1)}>01 <span>Who is losing a voice?</span></button>
       </nav>
 
-      <div className="space-caption"><span>{String(nearest.id).padStart(2, '0')}</span><div><p>{nearest.kicker}</p><h1>{nearest.title}</h1><small>Click the illuminated work to view full</small></div></div>
+      <div className="space-caption"><span>{String(nearest.id).padStart(2, '0')}</span><div><p>{nearest.kicker}</p><h1>{nearest.title}</h1><button onClick={() => setDetail(nearest)}>View full image</button></div></div>
       <div className="walk-instruction">Scroll to walk · Drag to look · Click a work to enter</div>
       <div className="walk-progress" aria-hidden="true"><span style={{ width: `${Math.max(2, progress * 100)}%` }} /></div>
 
@@ -377,8 +377,8 @@ function Detail({ work, close }: { work: Work | null; close: () => void }) {
   return (
     <div className="detail-backdrop" role="dialog" aria-modal="true" aria-label={work.title}>
       <button className="detail-close" onClick={close} aria-label="Close exhibit"><X /></button>
-      <div className="detail-board"><img src={work.image} alt={`Full exhibition board: ${work.title}`} /></div>
       <article className="detail-copy"><p className="eyebrow">{work.kicker}</p><h2>{work.title}</h2><p>{work.summary}</p><blockquote>{work.pull}</blockquote><span className="detail-count">{String(index + 1).padStart(2, '0')} / {String(works.length).padStart(2, '0')}</span></article>
+      <div className="detail-board"><img src={work.image} alt={`Full exhibition board: ${work.title}`} /></div>
     </div>
   );
 }

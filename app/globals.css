@@ -55,7 +55,8 @@ button:focus-visible{outline:2px solid #f4eee0;outline-offset:4px}
 .space-caption>span{font:.66rem ui-monospace,monospace;color:#9e988d;padding-top:.35rem}
 .space-caption p{margin:0 0 .35rem;text-transform:uppercase;letter-spacing:.18em;color:#a39e94;font-size:.55rem}
 .space-caption h1{margin:0;font:400 clamp(1.45rem,2.7vw,2.8rem)/.95 Georgia,serif}
-.space-caption small{display:block;margin-top:.8rem;color:#8a857b;text-transform:uppercase;letter-spacing:.16em;font-size:.5rem}
+.space-caption button{pointer-events:auto;display:block;margin-top:.85rem;padding:.45rem .65rem;border:1px solid #777168;background:#0808088f;color:#d8d3c8;text-transform:uppercase;letter-spacing:.16em;font-size:.52rem;cursor:pointer;backdrop-filter:blur(8px)}
+.space-caption button:hover{background:#e9e6de;color:#171714}
 
 .walk-instruction{position:absolute;z-index:16;bottom:3.5vh;left:50%;transform:translateX(-50%);white-space:nowrap;text-transform:uppercase;letter-spacing:.2em;color:#aaa59b;font:.57rem ui-monospace,monospace;text-shadow:0 1px 12px #000}
 .walk-progress{position:absolute;z-index:16;left:25%;right:25%;bottom:2.15vh;height:1px;background:#ffffff18;overflow:hidden}
@@ -84,7 +85,7 @@ button:focus-visible{outline:2px solid #f4eee0;outline-offset:4px}
 .door-flare{position:absolute;z-index:4;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 60%,rgba(238,232,216,.34),transparent 42%);opacity:0;transition:opacity .4s;mix-blend-mode:screen}
 .is-transitioning .door-flare{opacity:.58}
 
-.detail-backdrop{position:fixed;inset:0;z-index:60;background:#050504f2;backdrop-filter:blur(22px);display:grid;grid-template-columns:minmax(290px,55vw) minmax(280px,430px);gap:clamp(2rem,5vw,7rem);align-items:center;justify-content:center;padding:5vh 5vw}
+.detail-backdrop{position:fixed;inset:0;z-index:60;background:#050504e6;backdrop-filter:blur(22px);display:grid;grid-template-columns:minmax(280px,410px) minmax(360px,1fr);gap:clamp(2rem,5vw,7rem);align-items:center;justify-content:center;padding:5vh 5vw}
 .detail-close{position:absolute;right:2.4vw;top:2.8vh;color:#ddd;background:#080808;border:1px solid #666;width:44px;height:44px;display:grid;place-items:center;cursor:pointer;z-index:2}
 .detail-close svg{width:17px}
 .detail-board{height:88vh;display:flex;align-items:center;justify-content:center}
@@ -114,7 +115,7 @@ button:focus-visible{outline:2px solid #f4eee0;outline-offset:4px}
   .mode-grid{grid-template-columns:1fr}.mode-grid button+button{border-left:0;border-top:1px solid #56534e}
   .space-header{grid-template-columns:1fr auto;height:62px}.space-header>span{display:none}
   .space-header button:last-child{font-size:.72rem}
-  .space-caption{top:82px;left:1rem;right:1rem;max-width:75%}.space-caption h1{font-size:1.55rem}.space-caption small{display:none}
+  .space-caption{top:82px;left:1rem;right:1rem;max-width:75%}.space-caption h1{font-size:1.55rem}.space-caption button{font-size:.48rem}
   .chapter-nav{left:1rem;bottom:1.1rem}.chapter-nav button.active span{display:none}
   .walk-instruction{bottom:4.5rem;font-size:.48rem;letter-spacing:.12em}
   .walk-progress{left:20%;right:20%;bottom:3.65rem}
