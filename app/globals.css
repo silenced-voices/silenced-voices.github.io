@@ -33,8 +33,6 @@ button:focus-visible{outline:2px solid #f4eee0;outline-offset:4px}
 .enter-button{display:flex;align-items:center;gap:2.7rem;padding:1.08rem 1.15rem 1.08rem 1.35rem;border:1px solid #e5dfd2;background:#e5dfd2;color:#121210;text-transform:uppercase;letter-spacing:.15em;font-size:.58rem;transition:gap .25s,background .25s,color .25s}
 .enter-button:hover{gap:3.25rem;background:transparent;color:#eeeae0}
 .enter-button svg{width:15px}
-.page-button{padding:.8rem 0;border:0;border-bottom:1px solid #69645c;background:transparent;color:#aaa49a;text-transform:uppercase;letter-spacing:.15em;font-size:.55rem}
-.page-button:hover{color:#eeeae0;border-color:#eeeae0}
 .opening-stage{position:relative;height:min(75vh,760px);border:0;background:transparent;color:#ddd;cursor:pointer;perspective:1200px}
 .opening-stage:before{content:'';position:absolute;left:50%;top:-18%;width:66%;height:95%;transform:translateX(-50%);background:linear-gradient(180deg,rgba(233,226,211,.18),rgba(233,226,211,.025) 72%,transparent);clip-path:polygon(31% 0,69% 0,100% 100%,0 100%);filter:blur(10px);opacity:.72}
 .opening-stage:after{content:'';position:absolute;left:7%;right:7%;bottom:2%;height:18%;background:radial-gradient(ellipse,rgba(220,214,201,.22),transparent 65%);filter:blur(12px);transform:rotateX(68deg)}
@@ -66,7 +64,7 @@ button:focus-visible{outline:2px solid #f4eee0;outline-offset:4px}
 
 .space-header{position:absolute;top:0;left:0;right:0;z-index:20;height:72px;padding:0 2.4vw;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;border-bottom:1px solid var(--line);background:linear-gradient(#050505d9,transparent);text-transform:uppercase;letter-spacing:.18em;font-size:.63rem;pointer-events:none}
 .space-header button{pointer-events:auto;color:inherit;border:0;background:none;cursor:pointer;text-transform:uppercase;letter-spacing:.17em}
-.space-header button:last-child{text-align:right;font-size:1rem}
+.space-count{text-align:right;color:#8f8a81;font:.55rem ui-monospace,monospace}
 .wordmark{font-family:Georgia,serif!important;font-size:1.05rem!important;text-transform:none!important;letter-spacing:0!important;text-align:left}
 .wordmark i{font-weight:400}
 
@@ -125,22 +123,6 @@ button:focus-visible{outline:2px solid #f4eee0;outline-offset:4px}
 .detail-copy blockquote{margin:2rem 0;padding:1.2rem 0;border-top:1px solid #665e54;border-bottom:1px solid #665e54;color:#eee8db;font:italic 1.32rem/1.4 Georgia,serif}
 .detail-count{display:block;color:#77716a;font:.58rem ui-monospace,monospace;letter-spacing:.18em}
 
-.reading-mode{background:var(--paper);color:var(--ink);min-height:100vh}
-.reading-header{position:sticky;top:0;z-index:10;background:#e9e6deeb;backdrop-filter:blur(14px);border-bottom:1px solid #bdb7ab;height:68px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 4vw;text-transform:uppercase;letter-spacing:.14em;font-size:.62rem}
-.reading-header button{border:0;background:none;color:inherit;cursor:pointer}
-.reading-header button:last-child{text-align:right;text-transform:uppercase;letter-spacing:.14em;font-size:.62rem}
-.reading-hero{min-height:75vh;padding:11vh 8vw;display:grid;grid-template-columns:1fr 4fr;align-content:center;border-bottom:1px solid #aaa397}
-.reading-hero>p{font-family:ui-monospace,monospace}
-.reading-hero h1{font:400 clamp(3.8rem,9vw,9rem)/.85 Georgia,serif;letter-spacing:-.055em;margin:0;max-width:1150px}
-.reading-hero blockquote{grid-column:2;margin:4rem 0 0;font:italic 1.15rem Georgia,serif}
-.reading-list{padding:0 4vw 10vh}
-.reading-list article{display:grid;grid-template-columns:minmax(280px,1fr) minmax(300px,.95fr);gap:8vw;align-items:center;min-height:100vh;padding:8vh 4vw;border-bottom:1px solid #aaa397}
-.reading-copy h2{font:400 clamp(2.7rem,5vw,5.5rem)/.96 Georgia,serif;margin:0 0 2rem}
-.reading-copy>p:not(.eyebrow){max-width:620px;font:1.1rem/1.75 Georgia,serif}
-.reading-copy blockquote{margin:2rem 0 0;padding-left:1.2rem;border-left:4px solid var(--wine);font:italic 1.3rem/1.4 Georgia,serif}
-.board-button{padding:0;border:0;background:none;cursor:zoom-in}
-.board-button img{width:100%;max-height:80vh;object-fit:contain;display:block;box-shadow:0 18px 50px #29241e38}
-
 @media(max-width:820px){
   .opening-header{height:60px;flex-basis:60px;padding:0 1rem;grid-template-columns:1fr auto}.opening-header span:nth-child(2){display:none}
   .opening-scene{height:calc(100svh - 108px);display:block;padding:10vh 1.25rem 2rem;position:relative}
@@ -150,21 +132,18 @@ button:focus-visible{outline:2px solid #f4eee0;outline-offset:4px}
   .opening-stage{position:absolute;z-index:2;inset:2vh -27% auto 36%;height:74vh;opacity:.46}.opening-frame{height:min(54vh,500px)}.opening-halo{width:72vw}
   .opening-footer{height:48px;flex-basis:48px;padding:0 1rem}.opening-footer span:first-child{display:none}
   .space-header{grid-template-columns:1fr auto;height:62px}.space-header>span{display:none}
-  .space-header button:last-child{font-size:.72rem}
+  .space-count{font-size:.5rem}
   .chapter-nav{top:62px;justify-content:flex-start;padding:.4rem 1rem}.chapter-nav button.active span{display:none}
   .space-caption{top:108px;left:1rem;right:1rem;max-width:75%}.space-caption h1{font-size:1.55rem}.space-caption button{font-size:.48rem}
   .walk-instruction{bottom:4.5rem;font-size:.48rem;letter-spacing:.12em}
   .walk-progress{left:20%;right:20%;bottom:3.65rem}
-  .utility-nav{right:1rem;bottom:1rem}.utility-nav button:not(:last-child){display:none}
+  .utility-nav{right:1rem;bottom:1rem}.utility-nav button:nth-child(2){display:none}
   .nav-arrow{top:auto;bottom:7.2rem;height:46px;width:38px}.nav-arrow.prev{left:.75rem}.nav-arrow.next{right:.75rem}
   .control-card{left:1rem;right:1rem;bottom:6.6rem;width:auto}
   .detail-backdrop{display:block;overflow:auto;padding:5rem 1.1rem 3rem}
   .detail-board{height:auto;max-height:74vh;margin-bottom:2rem}.detail-board img{max-height:74vh}
   .detail-copy h2{font-size:2.5rem}
   .detail-arrow{top:auto;bottom:1rem;transform:none;width:42px;height:42px}.detail-previous{left:1rem}.detail-next{right:1rem}
-  .reading-header{grid-template-columns:1fr 1fr}.reading-header>span{display:none}
-  .reading-list article{grid-template-columns:1fr;padding:7vh 1vw;min-height:auto}
-  .reading-hero{display:block;min-height:66vh}.reading-hero h1{margin-top:2rem;font-size:3.4rem}.reading-hero blockquote{margin-top:3rem}
 }
 
 @media(prefers-reduced-motion:reduce){
