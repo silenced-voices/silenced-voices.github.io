@@ -237,7 +237,8 @@ export default function Home() {
   const currentRoom = chapterForZ(cameraZ);
   const currentChapter = chapters[currentRoom];
   const nearestPortalIndex = portalPositions.reduce((best, z, index) => Math.abs(z - cameraZ) < Math.abs(portalPositions[best] - cameraZ) ? index : best, 0);
-  const transitioning = Math.abs(portalPositions[nearestPortalIndex] - cameraZ) < 2.45;
+  const distanceBeforePortal = cameraZ - portalPositions[nearestPortalIndex];
+  const transitioning = distanceBeforePortal > 0.7 && distanceBeforePortal < PORTAL_GAP - 0.2;
   const enteringChapter = chapters[Math.min(nearestPortalIndex + 1, chapters.length - 1)];
   const nearest = works.reduce((best, work) => Math.abs(work.position[2] - cameraZ) < Math.abs(best.position[2] - cameraZ) ? work : best, works[0]);
 
