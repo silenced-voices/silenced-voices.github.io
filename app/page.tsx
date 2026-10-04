@@ -229,6 +229,7 @@ export default function Home() {
   const [detail, setDetail] = useState<Work | null>(null);
   const [sound, setSound] = useState(false);
   const [help, setHelp] = useState(true);
+  const [opening, setOpening] = useState(false);
   const [look, setLook] = useState({ x: 0, y: 0 });
   const drag = useRef<{ x: number; y: number; lastY: number; pointerType: string; baseX: number; baseY: number } | null>(null);
 
@@ -270,15 +271,33 @@ export default function Home() {
   const endDrag = (event: React.PointerEvent) => { if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); drag.current = null; };
   const walk = (event: React.WheelEvent) => { event.preventDefault(); setProgress((value) => clamp(value + clamp(event.deltaY, -180, 180) * 0.00024)); };
   const showRelative = (direction: number) => { if (!detail) return; const index = works.findIndex((work) => work.id === detail.id); setDetail(works[(index + direction + works.length) % works.length]); };
+  const enterExhibition = () => {
+    setOpening(true);
+    window.setTimeout(() => { setMode('space'); setOpening(false); }, 850);
+  };
 
   if (mode === 'ask') return (
-    <main className="threshold">
-      <div className="threshold-mark" aria-hidden="true"><span /><span /><span /></div>
-      <p className="eyebrow">Silenced Voices · Complete Exhibition</p>
-      <h1>Enter the<br />exhibition</h1>
-      <p className="threshold-intro">Walk through twelve connected rooms tracing aphasia, family care, rehabilitation, design, and the right to expression.</p>
-      <div className="mode-grid" aria-label="Choose how to visit"><button onClick={() => setMode('space')}><span className="mode-title">Space</span><span>Scroll through Chapters 00–10 + Appendix</span></button><button onClick={() => setMode('page')}><span className="mode-title">Page</span><span>The quiet editorial · all 29 boards</span></button></div>
-      <p className="threshold-note">Scroll to walk · drag to look · click a work to enter</p>
+    <main className={`threshold ${opening ? 'is-entering' : ''}`}>
+      <header className="opening-header"><span>Silenced Voices</span><span>A spatial research exhibition · 2026</span><span>29 works</span></header>
+      <section className="opening-scene">
+        <div className="opening-copy">
+          <p className="eyebrow">Chapter 00 · A personal beginning</p>
+          <h1>Silenced<br /><i>Voices</i></h1>
+          <p className="threshold-intro">An exhibition about aphasia, family care, and the right to be understood. Begin with one grandmother whose thoughts remained present when language became difficult to reach.</p>
+          <div className="opening-actions">
+            <button className="enter-button" onClick={enterExhibition}><span>Enter the exhibition</span><ArrowRight /></button>
+            <button className="page-button" onClick={() => setMode('page')}>Read as pages</button>
+          </div>
+        </div>
+        <button className="opening-stage" onClick={enterExhibition} aria-label="Enter the spatial exhibition">
+          <span className="opening-halo" />
+          <span className="opening-frame"><img src="/exhibition/page-01.jpg" alt="Silenced Voices exhibition cover" /></span>
+          <span className="opening-shadow" />
+          <span className="opening-index">00 / Threshold</span>
+        </button>
+      </section>
+      <footer className="opening-footer"><span>Scroll to walk · drag to look · click a work to enter</span><span>Chapters 00–10 + Appendix</span></footer>
+      <div className="opening-transition" aria-hidden="true"><span /><p>Entering the exhibition</p></div>
     </main>
   );
 
