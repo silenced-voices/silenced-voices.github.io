@@ -74,6 +74,10 @@ button:focus-visible{outline:2px solid #f4eee0;outline-offset:4px}
 .room-viewport canvas{display:block;width:100%!important;height:100%!important}
 .scene-loader{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 58%,#181713 0,transparent 30%),linear-gradient(180deg,#050505,#020202)}
 .webgl-fallback{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 58%,#181713 0,transparent 30%),linear-gradient(180deg,#050505,#020202)}
+.gallery-warmup{position:absolute;z-index:55;inset:0;display:grid;place-content:center;justify-items:center;gap:.75rem;background:#050504f4;color:#e6ded1;text-align:center;pointer-events:auto}
+.gallery-warmup:before{content:'';position:absolute;width:min(42vw,420px);aspect-ratio:1;border:1px solid #d5ccbb2c;border-radius:50%;box-shadow:0 0 0 6vw #d5ccbb09;animation:warmup-orbit 2.2s linear infinite}.gallery-warmup>*{position:relative}
+.gallery-warmup span{width:1px;height:4.5rem;background:#ddd4c4;box-shadow:0 0 24px #eee4cd}.gallery-warmup p{margin:.5rem 0 0;text-transform:uppercase;letter-spacing:.3em;font:.58rem ui-monospace,monospace}.gallery-warmup small{color:#9d968a;text-transform:uppercase;letter-spacing:.18em;font:.48rem ui-monospace,monospace}
+@keyframes warmup-orbit{to{transform:rotate(360deg)}}
 .space-mode:after{content:'';position:absolute;z-index:2;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 45%,rgba(0,0,0,.64) 100%),linear-gradient(180deg,rgba(0,0,0,.18),transparent 25%,transparent 72%,rgba(0,0,0,.34));box-shadow:inset 0 0 120px #000}
 .space-mode:before{content:'';position:absolute;z-index:3;inset:0;pointer-events:none;opacity:.13;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");mix-blend-mode:screen}
 .gallery-atmosphere{position:absolute;z-index:4;inset:0;pointer-events:none;overflow:hidden;mix-blend-mode:screen}

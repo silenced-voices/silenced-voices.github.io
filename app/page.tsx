@@ -385,6 +385,8 @@ export default function Home() {
   const [help, setHelp] = useState(true);
   const [opening, setOpening] = useState(false);
   const [mobileNotice, setMobileNotice] = useState(false);
+  const [warming, setWarming] = useState(false);
+  const [enhanced, setEnhanced] = useState(false);
   const [look, setLook] = useState({ x: 0, y: 0 });
   const drag = useRef<{ x: number; y: number; lastY: number; pointerType: string; baseX: number; baseY: number; captured: boolean } | null>(null);
   const progressRef = useRef(0);
@@ -486,7 +488,16 @@ export default function Home() {
     ]);
     await preparation;
     const remaining = Math.max(0, 2200 - (performance.now() - startedAt));
-    window.setTimeout(() => { setMode('space'); setOpening(false); }, remaining);
+    window.setTimeout(() => {
+      setWarming(true);
+      setEnhanced(false);
+      setMode('space');
+      setOpening(false);
+      window.setTimeout(() => {
+        setWarming(false);
+        window.setTimeout(() => setEnhanced(true), 1800);
+      }, 1300);
+    }, remaining);
   };
 
   if (mode === 'ask') return (
@@ -518,7 +529,8 @@ export default function Home() {
 
   return (
     <main className={`space-mode room-${currentRoom} ${transitioning ? 'is-transitioning' : ''}`}>
-      <section className="room-viewport" aria-label="Interactive 3D exhibition. Scroll to walk, drag to look, and click a mounted work to view it full screen." onWheel={walk} onPointerDown={beginDrag} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag}><Suspense fallback={<div className="scene-loader" aria-label="Loading exhibition" />}><LazyExhibitionScene progress={progress} look={look} activeWork={nearest.id} onSelect={setDetail} works={works} chapters={chapters} portalPositions={portalPositions} pathStartZ={PATH_START_Z} pathEndZ={PATH_END_Z} /></Suspense></section>
+      <section className="room-viewport" aria-label="Interactive 3D exhibition. Scroll to walk, drag to look, and click a mounted work to view it full screen." onWheel={walk} onPointerDown={beginDrag} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag}><Suspense fallback={<div className="scene-loader" aria-label="Loading exhibition" />}><LazyExhibitionScene progress={progress} look={look} activeWork={nearest.id} onSelect={setDetail} works={works} chapters={chapters} portalPositions={portalPositions} pathStartZ={PATH_START_Z} pathEndZ={PATH_END_Z} quality={warming ? 'warmup' : enhanced ? 'enhanced' : 'base'} /></Suspense></section>
+      {warming && <div className="gallery-warmup" role="status"><span /><p>Calibrating the gallery</p><small>Preparing the first rooms</small></div>}
       <div className="gallery-atmosphere" aria-hidden="true"><span className="atmosphere-orbit" /><span className="atmosphere-beam beam-one" /><span className="atmosphere-beam beam-two" /></div>
       <div className="gallery-readout" aria-hidden="true"><span>EXHIBITION INDEX</span><b>{String(currentRoom + 1).padStart(2, '0')} / {String(chapters.length).padStart(2, '0')}</b><i>Spatial studies · listening architecture</i></div>
       <header className="space-header"><button className="wordmark" onClick={() => setMode('ask')}>Silenced <i>Voices</i></button><span>Room {currentChapter.number} / {currentChapter.title}</span></header>
