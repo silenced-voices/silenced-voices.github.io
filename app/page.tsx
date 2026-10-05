@@ -204,6 +204,8 @@ function ArtPanel({ work, active, onSelect }: { work: Work; active: boolean; onS
   const texture = useTexture(work.image);
   const [hovered, setHovered] = useState(false);
   const group = useRef<THREE.Group>(null);
+  const frameMesh = useRef<THREE.Mesh>(null);
+  const imageMesh = useRef<THREE.Mesh>(null);
   const coverLight = useRef<THREE.PointLight>(null);
   const fade = useRef(1);
 
@@ -225,6 +227,12 @@ function ArtPanel({ work, active, onSelect }: { work: Work; active: boolean; onS
     const target = THREE.MathUtils.clamp((camera.position.z - work.position[2] - 2.0) / 1.15, 0, 1);
     fade.current = THREE.MathUtils.damp(fade.current, target, 18, delta);
     group.current.visible = fade.current > 0.012;
+    const capturePointer = fade.current > 0.98;
+    [frameMesh.current, imageMesh.current].forEach((mesh) => {
+      if (!mesh) return;
+      mesh.raycast = capturePointer ? THREE.Mesh.prototype.raycast : () => undefined;
+    });
+    if (!capturePointer && hovered) setHovered(false);
     group.current.traverse((child) => {
       if (!(child instanceof THREE.Mesh || child instanceof THREE.LineSegments)) return;
       const materials = Array.isArray(child.material) ? child.material : [child.material];
@@ -245,12 +253,12 @@ function ArtPanel({ work, active, onSelect }: { work: Work; active: boolean; onS
 
   return (
     <group ref={group} position={work.position} rotation={[0, work.rotation, 0]}>
-      <mesh position={[0, 0, -0.08]} onClick={select}>
+      <mesh ref={frameMesh} position={[0, 0, -0.08]} onClick={select}>
         <boxGeometry args={[work.size[0] + 0.18, work.size[1] + 0.18, 0.14]} />
         <meshStandardMaterial color="#0a0a09" roughness={0.5} metalness={0.45} />
         <Edges color={active || hovered ? '#ded8ca' : '#57544e'} threshold={15} />
       </mesh>
-      <mesh position={[0, 0, 0.008]} onClick={select} onPointerOver={(event) => { event.stopPropagation(); setHovered(true); }} onPointerOut={() => setHovered(false)}>
+      <mesh ref={imageMesh} position={[0, 0, 0.008]} onClick={select} onPointerOver={(event) => { event.stopPropagation(); setHovered(true); }} onPointerOut={() => setHovered(false)}>
         <planeGeometry args={work.size} />
         <meshBasicMaterial map={texture} toneMapped={false} />
       </mesh>
@@ -386,7 +394,11 @@ export default function Home() {
   const distanceBeforePortal = cameraZ - portalPositions[nearestPortalIndex];
   const transitioning = distanceBeforePortal > 0.7 && distanceBeforePortal < PORTAL_GAP - 0.2;
   const enteringChapter = chapters[Math.min(nearestPortalIndex + 1, chapters.length - 1)];
-  const nearest = works.reduce((best, work) => Math.abs(work.position[2] - cameraZ) < Math.abs(best.position[2] - cameraZ) ? work : best, works[0]);
+  // Once the camera has walked beyond a chapter cover, it is scenery only.
+  // Keeping it out of the active selection prevents keyboard/default selection
+  // from reopening a cover while the visitor is engaging with the wall behind it.
+  const selectableWorks = works.filter((work) => !work.cover || cameraZ - work.position[2] < 1.2);
+  const nearest = selectableWorks.reduce((best, work) => Math.abs(work.position[2] - cameraZ) < Math.abs(best.position[2] - cameraZ) ? work : best, selectableWorks[0] ?? works[0]);
 
   const walkTo = (next: number) => setProgress(clamp(next));
   const jumpToRoom = (room: number) => walkTo(progressForZ(chapters[room].firstWorkZ + 2.1));
