@@ -140,6 +140,8 @@ function RoomDecor({ chapter }: { chapter: Chapter }) {
       <mesh position={[0, 0.34, 0]}><boxGeometry args={[2.8, 0.13, 0.82]} /><meshStandardMaterial color="#11110f" roughness={0.42} metalness={0.58} /><Edges color="#5b5750" /></mesh>
       <mesh position={[-1.05, 0.15, 0]}><boxGeometry args={[0.09, 0.3, 0.58]} /><meshBasicMaterial color="#4a4741" /></mesh><mesh position={[1.05, 0.15, 0]}><boxGeometry args={[0.09, 0.3, 0.58]} /><meshBasicMaterial color="#4a4741" /></mesh>
       <mesh position={[0, 0.018, 0]}><boxGeometry args={[4.5, 0.018, 1.3]} /><meshBasicMaterial color={accent} transparent opacity={0.13} /></mesh>
+      <mesh position={[-side * 2.2, 0.025, 0.55]} rotation={[-Math.PI / 2, 0, 0]}><torusGeometry args={[0.82, 0.012, 6, 56]} /><meshBasicMaterial color={accent} transparent opacity={0.42} /></mesh>
+      <mesh position={[-side * 2.2, 0.026, 0.55]} rotation={[-Math.PI / 2, 0, 0]}><torusGeometry args={[1.18, 0.008, 6, 56]} /><meshBasicMaterial color="#ded8ca" transparent opacity={0.18} /></mesh>
     </group>
     <group position={[side * 4.72, 0, z - 1.25]}>
       <mesh position={[0, 0.62, 0]}><boxGeometry args={[1.08, 1.24, 1.08]} /><meshStandardMaterial color="#0b0b0a" roughness={0.35} metalness={0.68} transparent opacity={0.82} /><Edges color={accent} /></mesh>
@@ -147,6 +149,7 @@ function RoomDecor({ chapter }: { chapter: Chapter }) {
       <pointLight position={[0, 1.65, 0.8]} color={accent} intensity={2.2} distance={5.5} decay={2} />
     </group>
     <group position={[-side * 5.15, 0, z + 1.8]}>{[0, 0.36, 0.72].map((offset, index) => <mesh key={offset} position={[offset * side, 2.1 + index * 0.36, 0]}><boxGeometry args={[0.035, 4.2 - index * 0.72, 0.035]} /><meshBasicMaterial color={index === 1 ? accent : '#6e6a62'} transparent opacity={0.72} /></mesh>)}<mesh position={[0.36 * side, 4.7, 0]}><sphereGeometry args={[0.09, 12, 12]} /><meshBasicMaterial color={accent} /></mesh></group>
+    <group position={[-side * 3.7, 4.45, z - 0.7]} rotation={[0.18, side * 0.26, 0]}><mesh><octahedronGeometry args={[0.22, 1]} /><meshBasicMaterial color={accent} transparent opacity={0.82} /></mesh><mesh position={[0, -0.7, 0]}><cylinderGeometry args={[0.012, 0.012, 1.15, 8]} /><meshBasicMaterial color="#bdb5a8" transparent opacity={0.46} /></mesh><mesh position={[0, -1.32, 0]}><sphereGeometry args={[0.055, 10, 10]} /><meshBasicMaterial color="#eee7dc" /></mesh></group>
   </group>;
 }
 

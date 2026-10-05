@@ -493,6 +493,7 @@ export default function Home() {
     <main className={`threshold ${opening ? 'is-entering' : ''}`}>
       <header className="opening-header"><span>Silenced Voices</span><span>A spatial research exhibition · 2026</span></header>
       <section className="opening-scene">
+        <div className="opening-objects" aria-hidden="true"><span className="object-orbit orbit-one" /><span className="object-orbit orbit-two" /><span className="object-tag">ARCHIVE / 2026</span><span className="object-rule" /></div>
         <div className="opening-copy">
           <p className="eyebrow">Chapter 00 · A personal beginning</p>
           <h1>Silenced<br /><i>Voices</i></h1>
@@ -503,6 +504,7 @@ export default function Home() {
         </div>
         <button className="opening-stage" onClick={enterExhibition} aria-label="Enter the spatial exhibition">
           <span className="opening-halo" />
+          <span className="opening-rail rail-left" /><span className="opening-rail rail-right" />
           <span className="opening-frame"><img src="/boards/page-01-full.jpg" alt="Silenced Voices exhibition cover" /></span>
           <span className="opening-shadow" />
           <span className="opening-index">00 / Threshold</span>
@@ -516,6 +518,8 @@ export default function Home() {
   return (
     <main className={`space-mode room-${currentRoom} ${transitioning ? 'is-transitioning' : ''}`}>
       <section className="room-viewport" aria-label="Interactive 3D exhibition. Scroll to walk, drag to look, and click a mounted work to view it full screen." onWheel={walk} onPointerDown={beginDrag} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag}><Suspense fallback={<div className="scene-loader" aria-label="Loading exhibition" />}><LazyExhibitionScene progress={progress} look={look} activeWork={nearest.id} onSelect={setDetail} works={works} chapters={chapters} portalPositions={portalPositions} pathStartZ={PATH_START_Z} pathEndZ={PATH_END_Z} /></Suspense></section>
+      <div className="gallery-atmosphere" aria-hidden="true"><span className="atmosphere-orbit" /><span className="atmosphere-beam beam-one" /><span className="atmosphere-beam beam-two" /></div>
+      <div className="gallery-readout" aria-hidden="true"><span>EXHIBITION INDEX</span><b>{String(currentRoom + 1).padStart(2, '0')} / {String(chapters.length).padStart(2, '0')}</b><i>Spatial studies · listening architecture</i></div>
       <header className="space-header"><button className="wordmark" onClick={() => setMode('ask')}>Silenced <i>Voices</i></button><span>Room {currentChapter.number} / {currentChapter.title}</span></header>
       <nav className="chapter-nav" aria-label="Exhibition rooms">{chapters.map((chapter) => <button key={chapter.number} className={currentRoom === chapter.id ? 'active' : ''} onClick={() => jumpToRoom(chapter.id)} title={chapter.title}>{chapter.number}<span>{chapter.short}</span></button>)}</nav>
       <div className="space-caption"><span>{nearest.label}</span><div key={nearest.id}><p className="caption-kicker">{nearest.kicker}</p><h1>{nearest.title}</h1><p className="space-summary">{nearest.summary}</p><blockquote>{nearest.pull}</blockquote><button onClick={() => setDetail(nearest)}>View full image</button></div></div>
