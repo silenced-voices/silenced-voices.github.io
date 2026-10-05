@@ -36,7 +36,9 @@ type SceneProps = {
 };
 
 export function preloadArtwork(images: string[]) {
-  images.forEach((image) => useTexture.preload(image));
+  images.forEach((image) => {
+    try { useTexture.preload(image); } catch { /* native image warming still covers unsupported browsers */ }
+  });
 }
 
 function ArtPanel({ work, active, onSelect }: { work: Work; active: boolean; onSelect: (work: Work) => void }) {
@@ -148,17 +150,17 @@ function RoomDecor({ chapter }: { chapter: Chapter }) {
   </group>;
 }
 
-function Architecture({ chapters, portalPositions, pathStartZ, pathEndZ }: Pick<SceneProps, 'chapters' | 'portalPositions' | 'pathStartZ' | 'pathEndZ'>) {
+function Architecture({ chapters, portalPositions, pathStartZ, pathEndZ, compact }: Pick<SceneProps, 'chapters' | 'portalPositions' | 'pathStartZ' | 'pathEndZ'> & { compact: boolean }) {
   const centerZ = (pathStartZ + pathEndZ) / 2;
   const length = pathStartZ - pathEndZ + 16;
   const ribs = useMemo(() => Array.from({ length: Math.ceil(length / 4.6) }, (_, index) => pathStartZ - 4 - index * 4.6), [length, pathStartZ]);
   return <>
     <fog attach="fog" args={['#020202', 9, 46]} /><ambientLight intensity={0.3} color="#d8d3c7" /><directionalLight position={[0, 7, 7]} intensity={1.1} color="#e7dfcf" />
-    <mesh position={[0, -0.08, centerZ]} rotation={[-Math.PI / 2, 0, 0]}><planeGeometry args={[12, length]} /><MeshReflectorMaterial blur={[280, 95]} resolution={384} mixBlur={1.1} mixStrength={1.8} roughness={0.72} depthScale={0.8} minDepthThreshold={0.25} maxDepthThreshold={1.25} color="#060606" metalness={0.45} mirror={0.38} /></mesh>
+    <mesh position={[0, -0.08, centerZ]} rotation={[-Math.PI / 2, 0, 0]}><planeGeometry args={[12, length]} /><MeshReflectorMaterial blur={[280, 95]} resolution={compact ? 192 : 384} mixBlur={1.1} mixStrength={1.8} roughness={0.72} depthScale={0.8} minDepthThreshold={0.25} maxDepthThreshold={1.25} color="#060606" metalness={0.45} mirror={0.38} /></mesh>
     <gridHelper args={[length, Math.ceil(length / 4), '#4a4945', '#151515']} position={[0, 0.015, centerZ]} /><gridHelper args={[length, Math.ceil(length / 4), '#383733', '#111111']} position={[0, 5.5, centerZ]} /><gridHelper args={[length, Math.ceil(length / 4), '#393834', '#111111']} position={[-6, 2.75, centerZ]} rotation={[0, 0, Math.PI / 2]} /><gridHelper args={[length, Math.ceil(length / 4), '#393834', '#111111']} position={[6, 2.75, centerZ]} rotation={[0, 0, Math.PI / 2]} />
     {ribs.map((z) => <group key={z} position={[0, 0, z]}><mesh position={[-5.82, 2.75, 0]}><boxGeometry args={[0.06, 5.5, 0.06]} /><meshBasicMaterial color="#4a4945" /></mesh><mesh position={[5.82, 2.75, 0]}><boxGeometry args={[0.06, 5.5, 0.06]} /><meshBasicMaterial color="#4a4945" /></mesh><mesh position={[0, 5.36, 0]}><boxGeometry args={[11.7, 0.06, 0.06]} /><meshBasicMaterial color="#43413d" /></mesh></group>)}
     {portalPositions.map((z) => <Portal key={z} z={z} />)}{chapters.map((chapter) => <RoomDecor key={chapter.number} chapter={chapter} />)}
-    <mesh position={[0, 2.75, pathEndZ - 1]}><boxGeometry args={[12, 5.5, 0.35]} /><meshStandardMaterial color="#050505" roughness={0.86} /><Edges color="#353431" /></mesh><Sparkles count={300} scale={[11, 5.2, length]} position={[0, 2.8, centerZ]} size={1.25} speed={0.07} opacity={0.36} color="#d6d2c8" />
+    <mesh position={[0, 2.75, pathEndZ - 1]}><boxGeometry args={[12, 5.5, 0.35]} /><meshStandardMaterial color="#050505" roughness={0.86} /><Edges color="#353431" /></mesh><Sparkles count={compact ? 120 : 300} scale={[11, 5.2, length]} position={[0, 2.8, centerZ]} size={1.25} speed={0.07} opacity={0.36} color="#d6d2c8" />
   </>;
 }
 
@@ -180,22 +182,23 @@ function CameraRig({ progress, look, portalPositions, pathStartZ, pathEndZ }: Pi
 
 export default function ExhibitionScene({ progress, look, activeWork, onSelect, works, chapters, portalPositions, pathStartZ, pathEndZ }: SceneProps) {
   const cameraZ = THREE.MathUtils.lerp(pathStartZ, pathEndZ, progress);
+  const [compact] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 820px)').matches);
   const prefetched = useRef(new Set<string>());
-  const nearbyWorks = works.filter((work) => Math.abs(work.position[2] - cameraZ) < 42);
+  const nearbyWorks = works.filter((work) => Math.abs(work.position[2] - cameraZ) < (compact ? 28 : 42));
 
   useEffect(() => {
-    works.filter((work) => Math.abs(work.position[2] - cameraZ) < 72).forEach((work) => {
+    works.filter((work) => Math.abs(work.position[2] - cameraZ) < (compact ? 44 : 72)).forEach((work) => {
       if (prefetched.current.has(work.image)) return;
       prefetched.current.add(work.image);
       const image = new Image();
       image.decoding = 'async';
       image.src = work.image;
     });
-  }, [cameraZ, works]);
+  }, [cameraZ, compact, works]);
 
-  return <Canvas dpr={[1, 1.4]} camera={{ position: [0, 2.62, pathStartZ], fov: 56, near: 0.1, far: 560 }} gl={{ antialias: true, powerPreference: 'high-performance' }}>
+  return <Canvas dpr={compact ? [1, 1] : [1, 1.4]} camera={{ position: [0, 2.62, pathStartZ], fov: 56, near: 0.1, far: 560 }} gl={{ antialias: !compact, powerPreference: 'high-performance' }} fallback={<div className="webgl-fallback" />}>
     <color attach="background" args={['#020202']} />
-    <Architecture chapters={chapters} portalPositions={portalPositions} pathStartZ={pathStartZ} pathEndZ={pathEndZ} />
+    <Architecture chapters={chapters} portalPositions={portalPositions} pathStartZ={pathStartZ} pathEndZ={pathEndZ} compact={compact} />
     {nearbyWorks.map((work) => <Suspense key={work.id} fallback={<PanelPlaceholder work={work} active={work.id === activeWork} />}><ArtPanel work={work} active={work.id === activeWork} onSelect={onSelect} /></Suspense>)}
     <CameraRig progress={progress} look={look} portalPositions={portalPositions} pathStartZ={pathStartZ} pathEndZ={pathEndZ} />
   </Canvas>;

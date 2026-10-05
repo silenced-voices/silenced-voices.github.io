@@ -466,21 +466,26 @@ export default function Home() {
     if (opening) return;
     setOpening(true);
     const startedAt = performance.now();
+    const warmDistance = window.matchMedia('(max-width: 820px)').matches ? 42 : 72;
     const initialArtwork = works
-      .filter((work) => Math.abs(work.position[2] - PATH_START_Z) < 72)
+      .filter((work) => Math.abs(work.position[2] - PATH_START_Z) < warmDistance)
       .map((work) => work.image);
     const warmImage = (source: string) => new Promise<void>((resolve) => {
       const image = new Image();
       image.decoding = 'async';
-      image.onload = () => { image.decode().catch(() => undefined).finally(resolve); };
+      image.onload = () => {
+        if (typeof image.decode !== 'function') { resolve(); return; }
+        image.decode().catch(() => undefined).finally(resolve);
+      };
       image.onerror = () => resolve();
       image.src = source;
     });
 
-    await Promise.all([
+    const preparation = Promise.all([
       import('./exhibition-scene').then((scene) => scene.preloadArtwork(initialArtwork)).catch(() => undefined),
       ...initialArtwork.map(warmImage),
     ]);
+    await Promise.race([preparation, new Promise<void>((resolve) => window.setTimeout(resolve, 5500))]);
     const remaining = Math.max(0, 1800 - (performance.now() - startedAt));
     window.setTimeout(() => { setMode('space'); setOpening(false); }, remaining);
   };
