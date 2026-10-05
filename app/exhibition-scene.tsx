@@ -157,7 +157,7 @@ function CameraRig({ progress, look, portalPositions, pathStartZ, pathEndZ }: Pi
     const doorway = Math.exp(-Math.pow(nearestPortal / 2.4, 2));
     camera.position.z = THREE.MathUtils.damp(camera.position.z, targetZ, 5.5, delta);
     camera.position.x = THREE.MathUtils.damp(camera.position.x, Math.sin(progress * Math.PI * 13.8) * 0.12, 4, delta);
-    camera.position.y = THREE.MathUtils.damp(camera.position.y, 2.32 + doorway * 0.07, 4, delta);
+    camera.position.y = THREE.MathUtils.damp(camera.position.y, 2.62 + doorway * 0.07, 4, delta);
     const yaw = THREE.MathUtils.degToRad(look.x); const pitch = THREE.MathUtils.degToRad(look.y);
     camera.lookAt(camera.position.x + Math.sin(yaw) * 12, camera.position.y + Math.sin(pitch) * 10, camera.position.z - Math.cos(yaw) * 12);
     const perspectiveCamera = camera as THREE.PerspectiveCamera; const targetFov = 56 + doorway * 8;
@@ -169,7 +169,7 @@ function CameraRig({ progress, look, portalPositions, pathStartZ, pathEndZ }: Pi
 export default function ExhibitionScene({ progress, look, activeWork, onSelect, works, chapters, portalPositions, pathStartZ, pathEndZ }: SceneProps) {
   const cameraZ = THREE.MathUtils.lerp(pathStartZ, pathEndZ, progress);
   const nearbyWorks = works.filter((work) => Math.abs(work.position[2] - cameraZ) < 28);
-  return <Canvas dpr={[1, 1.4]} camera={{ position: [0, 2.32, pathStartZ], fov: 56, near: 0.1, far: 560 }} gl={{ antialias: true, powerPreference: 'high-performance' }}>
+  return <Canvas dpr={[1, 1.4]} camera={{ position: [0, 2.62, pathStartZ], fov: 56, near: 0.1, far: 560 }} gl={{ antialias: true, powerPreference: 'high-performance' }}>
     <color attach="background" args={['#020202']} />
     <Suspense fallback={null}><Architecture chapters={chapters} portalPositions={portalPositions} pathStartZ={pathStartZ} pathEndZ={pathEndZ} />{nearbyWorks.map((work) => <ArtPanel key={work.id} work={work} active={work.id === activeWork} onSelect={onSelect} />)}</Suspense>
     <CameraRig progress={progress} look={look} portalPositions={portalPositions} pathStartZ={pathStartZ} pathEndZ={pathEndZ} />
