@@ -384,6 +384,7 @@ export default function Home() {
   const [detail, setDetail] = useState<Work | null>(null);
   const [help, setHelp] = useState(true);
   const [opening, setOpening] = useState(false);
+  const [mobileNotice, setMobileNotice] = useState(false);
   const [look, setLook] = useState({ x: 0, y: 0 });
   const drag = useRef<{ x: number; y: number; lastY: number; pointerType: string; baseX: number; baseY: number; captured: boolean } | null>(null);
   const progressRef = useRef(0);
@@ -463,12 +464,10 @@ export default function Home() {
   const showRelative = (direction: number) => { if (!detail) return; const index = works.findIndex((work) => work.id === detail.id); setDetail(works[(index + direction + works.length) % works.length]); };
   const enterExhibition = async () => {
     if (opening) return;
+    if (window.matchMedia('(max-width: 820px)').matches) { setMobileNotice(true); return; }
     setOpening(true);
     const startedAt = performance.now();
-    const warmDistance = window.matchMedia('(max-width: 820px)').matches ? 42 : 72;
-    const initialArtwork = works
-      .filter((work) => Math.abs(work.position[2] - PATH_START_Z) < warmDistance)
-      .map((work) => work.image);
+    const initialArtwork = works.map((work) => work.image);
     const warmImage = (source: string) => new Promise<void>((resolve) => {
       const image = new Image();
       image.decoding = 'async';
@@ -484,8 +483,8 @@ export default function Home() {
       import('./exhibition-scene').then((scene) => scene.preloadArtwork(initialArtwork)).catch(() => undefined),
       ...initialArtwork.map(warmImage),
     ]);
-    await Promise.race([preparation, new Promise<void>((resolve) => window.setTimeout(resolve, 5500))]);
-    const remaining = Math.max(0, 1800 - (performance.now() - startedAt));
+    await preparation;
+    const remaining = Math.max(0, 2200 - (performance.now() - startedAt));
     window.setTimeout(() => { setMode('space'); setOpening(false); }, remaining);
   };
 
@@ -512,6 +511,7 @@ export default function Home() {
       </section>
       <footer className="opening-footer"><span>Scroll to walk · drag to look · click a work to enter</span><span>Chapters 00–10 + Appendix</span></footer>
       <div className="opening-transition" aria-hidden="true"><span /><p>Preparing the gallery</p></div>
+      {mobileNotice && <div className="mobile-notice" role="dialog" aria-modal="true" aria-label="Best viewing experience"><button onClick={() => setMobileNotice(false)} aria-label="Close message"><X /></button><p>Silenced Voices</p><strong>Please view this website on a laptop for the best viewing experience.</strong><span>The full spatial exhibition is designed for a larger screen.</span></div>}
     </main>
   );
 

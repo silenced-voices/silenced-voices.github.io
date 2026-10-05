@@ -186,23 +186,11 @@ function CameraRig({ progress, look, portalPositions, pathStartZ, pathEndZ }: Pi
 export default function ExhibitionScene({ progress, look, activeWork, onSelect, works, chapters, portalPositions, pathStartZ, pathEndZ }: SceneProps) {
   const cameraZ = THREE.MathUtils.lerp(pathStartZ, pathEndZ, progress);
   const [compact] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 820px)').matches);
-  const prefetched = useRef(new Set<string>());
-  const nearbyWorks = works.filter((work) => Math.abs(work.position[2] - cameraZ) < (compact ? 28 : 42));
-
-  useEffect(() => {
-    works.filter((work) => Math.abs(work.position[2] - cameraZ) < (compact ? 44 : 72)).forEach((work) => {
-      if (prefetched.current.has(work.image)) return;
-      prefetched.current.add(work.image);
-      const image = new Image();
-      image.decoding = 'async';
-      image.src = work.image;
-    });
-  }, [cameraZ, compact, works]);
 
   return <Canvas dpr={compact ? [1, 1] : [1, 1.4]} camera={{ position: [0, 2.62, pathStartZ], fov: 56, near: 0.1, far: 560 }} gl={{ antialias: !compact, powerPreference: 'high-performance' }} fallback={<div className="webgl-fallback" />}>
     <color attach="background" args={['#020202']} />
     <Architecture chapters={chapters} portalPositions={portalPositions} pathStartZ={pathStartZ} pathEndZ={pathEndZ} compact={compact} />
-    {nearbyWorks.map((work) => <Suspense key={work.id} fallback={<PanelPlaceholder work={work} active={work.id === activeWork} />}><ArtPanel work={work} active={work.id === activeWork} onSelect={onSelect} /></Suspense>)}
+    {works.map((work) => <Suspense key={work.id} fallback={<PanelPlaceholder work={work} active={work.id === activeWork} />}><ArtPanel work={work} active={work.id === activeWork} onSelect={onSelect} /></Suspense>)}
     <CameraRig progress={progress} look={look} portalPositions={portalPositions} pathStartZ={pathStartZ} pathEndZ={pathEndZ} />
   </Canvas>;
 }
