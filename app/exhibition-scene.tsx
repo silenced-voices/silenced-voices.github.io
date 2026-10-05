@@ -128,6 +128,20 @@ function RoomDecor({ chapter }: { chapter: Chapter }) {
   const sculpture = useRef<THREE.Group>(null);
   const z = chapter.lastWorkZ - 2.15;
   const side = chapter.id % 2 === 0 ? 1 : -1;
+  const bench = [
+    null,
+    { x: -3.45, zOffset: 0.9, rotation: 0.16 },
+    null,
+    { x: 3.5, zOffset: -1.25, rotation: -0.2 },
+    { x: -2.55, zOffset: -3.2, rotation: 0.27 },
+    null,
+    { x: 3.2, zOffset: 0.35, rotation: -0.14 },
+    null,
+    { x: -3.1, zOffset: -2.15, rotation: 0.2 },
+    null,
+    { x: 1.85, zOffset: -1.4, rotation: -0.1 },
+    null,
+  ][chapter.id];
   const accents = ['#c9c1ad', '#8d665f', '#79817a'];
   const accent = accents[chapter.id % accents.length];
   useFrame((_, delta) => {
@@ -137,12 +151,11 @@ function RoomDecor({ chapter }: { chapter: Chapter }) {
   });
   return <group>
     <group position={[0, 0, z]}>
-      <mesh position={[0, 0.34, 0]}><boxGeometry args={[2.8, 0.13, 0.82]} /><meshStandardMaterial color="#11110f" roughness={0.42} metalness={0.58} /><Edges color="#5b5750" /></mesh>
-      <mesh position={[-1.05, 0.15, 0]}><boxGeometry args={[0.09, 0.3, 0.58]} /><meshBasicMaterial color="#4a4741" /></mesh><mesh position={[1.05, 0.15, 0]}><boxGeometry args={[0.09, 0.3, 0.58]} /><meshBasicMaterial color="#4a4741" /></mesh>
       <mesh position={[0, 0.018, 0]}><boxGeometry args={[4.5, 0.018, 1.3]} /><meshBasicMaterial color={accent} transparent opacity={0.13} /></mesh>
       <mesh position={[-side * 2.2, 0.025, 0.55]} rotation={[-Math.PI / 2, 0, 0]}><torusGeometry args={[0.82, 0.012, 6, 56]} /><meshBasicMaterial color={accent} transparent opacity={0.42} /></mesh>
       <mesh position={[-side * 2.2, 0.026, 0.55]} rotation={[-Math.PI / 2, 0, 0]}><torusGeometry args={[1.18, 0.008, 6, 56]} /><meshBasicMaterial color="#ded8ca" transparent opacity={0.18} /></mesh>
     </group>
+    {bench && <group position={[bench.x, 0, z + bench.zOffset]} rotation={[0, bench.rotation, 0]}><mesh position={[0, 0.34, 0]}><boxGeometry args={[2.8, 0.13, 0.82]} /><meshStandardMaterial color="#11110f" roughness={0.42} metalness={0.58} /><Edges color="#5b5750" /></mesh><mesh position={[-1.05, 0.15, 0]}><boxGeometry args={[0.09, 0.3, 0.58]} /><meshBasicMaterial color="#4a4741" /></mesh><mesh position={[1.05, 0.15, 0]}><boxGeometry args={[0.09, 0.3, 0.58]} /><meshBasicMaterial color="#4a4741" /></mesh></group>}
     <group position={[side * 4.72, 0, z - 1.25]}>
       <mesh position={[0, 0.62, 0]}><boxGeometry args={[1.08, 1.24, 1.08]} /><meshStandardMaterial color="#0b0b0a" roughness={0.35} metalness={0.68} transparent opacity={0.82} /><Edges color={accent} /></mesh>
       <group ref={sculpture} position={[0, 2.05, 0]}><mesh><torusGeometry args={[0.54, 0.024, 8, 56]} /><meshBasicMaterial color={accent} transparent opacity={0.78} /></mesh><mesh rotation={[Math.PI / 2, 0.35, 0]}><torusGeometry args={[0.37, 0.018, 8, 48]} /><meshBasicMaterial color="#ded8ca" transparent opacity={0.56} /></mesh><mesh rotation={[0.4, Math.PI / 2, 0.25]}><torusGeometry args={[0.7, 0.014, 8, 64]} /><meshBasicMaterial color={accent} transparent opacity={0.38} /></mesh><mesh><sphereGeometry args={[0.08, 12, 12]} /><meshBasicMaterial color="#f1ece0" /></mesh></group>
