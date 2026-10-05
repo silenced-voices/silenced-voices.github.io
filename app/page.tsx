@@ -21,6 +21,7 @@ type BoardRef = {
   half: 'full' | 'left' | 'right';
   title: string;
   cover?: boolean;
+  fullSpread?: boolean;
 };
 
 type Work = {
@@ -39,7 +40,7 @@ type Work = {
   size: [number, number];
 };
 
-const board = (page: number, half: BoardRef['half'], title: string, cover = false): BoardRef => ({ page, half, title, cover });
+const board = (page: number, half: BoardRef['half'], title: string, cover = false, fullSpread = false): BoardRef => ({ page, half, title, cover, fullSpread });
 
 const chapterSource = [
   { number: '00', short: 'Prologue', title: 'A Personal Beginning', boards: [
@@ -52,13 +53,13 @@ const chapterSource = [
     board(6, 'right', 'The Lost Window', true), board(7, 'left', 'Everyday Care'), board(7, 'right', 'Two Timelines'), board(8, 'left', 'The Need to Communicate Does Not Wait'),
   ] },
   { number: '03', short: 'Marginalized', title: 'The Marginalized Treatment', boards: [
-    board(8, 'right', 'The Marginalized Treatment', true), board(9, 'left', 'A Step Can Be Seen'), board(9, 'right', 'Support Shelves'), board(10, 'left', 'Recognition Must Reinforce Itself'), board(10, 'right', 'Opportunities to Confirm and Shrink'),
+    board(8, 'right', 'The Marginalized Treatment', true), board(9, 'left', 'A Step Can Be Seen'), board(9, 'right', 'Support Shelves'), board(10, 'full', 'Recognition Must Reinforce Itself', false, true),
   ] },
   { number: '04', short: 'History', title: 'History of Aphasia', boards: [
     board(11, 'left', 'History of Aphasia', true), board(11, 'right', 'From Localization to Participation'), board(12, 'left', 'When Professional Care Recedes'), board(12, 'right', 'Public Medical Issue Versus Household Problem'), board(13, 'left', 'Recognition Is Not Enough'),
   ] },
   { number: '05', short: 'Gentle Silence', title: 'The Gentle Silence', boards: [
-    board(13, 'right', 'The Gentle Silence', true), board(14, 'left', 'I Have Something to Say'), board(14, 'right', 'We Thought This Was Care'), board(15, 'left', 'Care Can Silence'), board(15, 'right', 'Fed, Warm, Medicated — Is That Enough?'),
+    board(13, 'right', 'The Gentle Silence', true), board(14, 'left', 'I Have Something to Say'), board(14, 'right', 'We Thought This Was Care'), board(15, 'full', 'Fed, Warm, Medicated — Is That Enough?', false, true),
   ] },
   { number: '06', short: 'Field Notes', title: 'Making Silence Visible', boards: [
     board(16, 'left', 'Field Notes: Making Silence Visible', true), board(16, 'right', 'How Were These Voices Collected?'), board(17, 'left', 'Five Participants, Five Forms of Silence'), board(17, 'right', 'A System Between Expertise and Capacity'), board(18, 'left', 'What the Voices Revealed'), board(18, 'right', 'Scenes Without Sound'),
@@ -73,7 +74,7 @@ const chapterSource = [
     board(24, 'left', 'The Right to Expression', true), board(24, 'right', 'Six Changes a Family Can Begin Today'), board(25, 'left', 'Rehabilitation Should Not End at Discharge'), board(25, 'right', 'Students Can Become Part of the Listening System'), board(26, 'left', 'From One Family to a Public Issue'),
   ] },
   { number: '10', short: 'Learning to Wait', title: 'Learning How to Wait', boards: [
-    board(26, 'right', 'Learning How to Wait', true), board(27, 'left', 'How Does a Voice Return?'), board(27, 'right', 'A Voice Returns Through Time'),
+    board(26, 'right', 'Learning How to Wait', true), board(27, 'full', 'How Does a Voice Return?', false, true),
   ] },
   { number: 'A', short: 'Appendix', title: 'Research Appendix', boards: [
     board(28, 'left', 'Interview Guide'), board(28, 'right', 'Public Awareness Survey'), board(29, 'left', 'Research Ethics'), board(29, 'right', 'Asset & Evidence Register'),
@@ -122,14 +123,14 @@ const contentWallPatterns = [
   [-1, -1, 1],
   [-1, 1, 1, -1, 1],
   [1, 1, -1],
-  [-1, 1, 1, -1],
+  [-1, 1, 1],
   [1, -1, -1, 1],
-  [-1, -1, 1, -1],
+  [-1, -1, 1],
   [1, -1, 1, 1, -1],
   [-1, 1, 1, -1],
   [1, 1, -1, 1],
   [-1, 1, 1, -1],
-  [-1, 1],
+  [-1],
   [-1, -1, 1, 1],
 ];
 
@@ -145,7 +146,7 @@ const works: Work[] = chapters.flatMap((chapter) => chapter.boards.map((item, in
   const source = copy[item.page];
   const contentIndex = item.cover ? 0 : index - (chapter.boards[0].cover ? 1 : 0);
   const side = item.cover ? 0 : contentWallPatterns[chapter.id][contentIndex] ?? (contentIndex % 2 === 0 ? -1 : 1);
-  const label = item.half === 'full' ? '01' : `${String(item.page).padStart(2, '0')}${item.half === 'left' ? 'L' : 'R'}`;
+  const label = item.half === 'full' ? (item.page === 1 ? '01' : String(item.page).padStart(2, '0')) : `${String(item.page).padStart(2, '0')}${item.half === 'left' ? 'L' : 'R'}`;
   const xOffsets = [3.34, 3.66, 3.48];
   const yOffsets = [2.38, 2.58, 2.47, 2.68];
   return {
@@ -161,7 +162,7 @@ const works: Work[] = chapters.flatMap((chapter) => chapter.boards.map((item, in
     pull: source.pull,
     position: [item.cover ? 0 : side * xOffsets[(index + chapter.id) % xOffsets.length], item.cover ? 2.62 : yOffsets[(index + chapter.id) % yOffsets.length], chapter.firstWorkZ - index * BOARD_SPACING] as [number, number, number],
     rotation: item.cover ? 0 : side < 0 ? 0.25 : -0.25,
-    size: item.cover ? [2.46, 3.48] : [2.28, 3.22],
+    size: item.cover ? [2.46, 3.48] : item.fullSpread ? [4.5, 3.18] : [2.28, 3.22],
   };
 }));
 
@@ -409,7 +410,7 @@ export default function Home() {
 
   if (mode === 'ask') return (
     <main className={`threshold ${opening ? 'is-entering' : ''}`}>
-      <header className="opening-header"><span>Silenced Voices</span><span>A spatial research exhibition · 2026</span><span>57 boards</span></header>
+      <header className="opening-header"><span>Silenced Voices</span><span>A spatial research exhibition · 2026</span><span>54 boards</span></header>
       <section className="opening-scene">
         <div className="opening-copy">
           <p className="eyebrow">Chapter 00 · A personal beginning</p>
@@ -434,7 +435,7 @@ export default function Home() {
   return (
     <main className={`space-mode room-${currentRoom} ${transitioning ? 'is-transitioning' : ''}`}>
       <section className="room-viewport" aria-label="Interactive 3D exhibition. Scroll to walk, drag to look, and click a mounted work to view it full screen." onWheel={walk} onPointerDown={beginDrag} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag}><ExhibitionScene progress={progress} look={look} activeWork={nearest.id} onSelect={setDetail} /></section>
-      <header className="space-header"><button className="wordmark" onClick={() => setMode('ask')}>Silenced <i>Voices</i></button><span>Room {currentChapter.number} / {currentChapter.title}</span><span className="space-count">57 boards</span></header>
+      <header className="space-header"><button className="wordmark" onClick={() => setMode('ask')}>Silenced <i>Voices</i></button><span>Room {currentChapter.number} / {currentChapter.title}</span><span className="space-count">54 boards</span></header>
       <nav className="chapter-nav" aria-label="Exhibition rooms">{chapters.map((chapter) => <button key={chapter.number} className={currentRoom === chapter.id ? 'active' : ''} onClick={() => jumpToRoom(chapter.id)} title={chapter.title}>{chapter.number}<span>{chapter.short}</span></button>)}</nav>
       <div className="space-caption"><span>{nearest.label}</span><div key={nearest.id}><p className="caption-kicker">{nearest.kicker}</p><h1>{nearest.title}</h1><p className="space-summary">{nearest.summary}</p><blockquote>{nearest.pull}</blockquote><button onClick={() => setDetail(nearest)}>View full image</button></div></div>
       <div className="walk-instruction">Scroll to walk · Drag to look · Click a work to enter</div>

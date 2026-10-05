@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: 'Silenced Voices · Complete Exhibition',
   description: 'Walk through the complete immersive exhibition about aphasia, family care, rehabilitation, and the right to expression.',
-  openGraph: { title: 'Silenced Voices · Complete Exhibition', description: 'Enter twelve connected rooms and explore all 57 individual exhibition boards.', images: ['/og.jpg'] },
+  openGraph: { title: 'Silenced Voices · Complete Exhibition', description: 'Enter twelve connected rooms and explore 54 exhibition boards and continuous spreads.', images: ['/og.jpg'] },
   twitter: { card: 'summary_large_image', images: ['/og.jpg'] },
 };
 
