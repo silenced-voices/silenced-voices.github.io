@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, ThreeEvent, useFrame } from '@react-three/fiber';
 import { Edges, MeshReflectorMaterial, Sparkles, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
@@ -193,6 +193,7 @@ const PATH_LENGTH = PATH_START_Z - PATH_END_Z;
 const portalPositions = chapters.slice(0, -1).map((chapter) => chapter.portalZ as number);
 const clamp = (value: number, min = 0, max = 1) => Math.max(min, Math.min(max, value));
 const progressForZ = (z: number) => clamp((PATH_START_Z - z) / PATH_LENGTH);
+const LazyExhibitionScene = lazy(() => import('./exhibition-scene'));
 
 function chapterForZ(z: number) {
   let room = 0;
@@ -466,7 +467,7 @@ export default function Home() {
 
   return (
     <main className={`space-mode room-${currentRoom} ${transitioning ? 'is-transitioning' : ''}`}>
-      <section className="room-viewport" aria-label="Interactive 3D exhibition. Scroll to walk, drag to look, and click a mounted work to view it full screen." onWheel={walk} onPointerDown={beginDrag} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag}><ExhibitionScene progress={progress} look={look} activeWork={nearest.id} onSelect={setDetail} /></section>
+      <section className="room-viewport" aria-label="Interactive 3D exhibition. Scroll to walk, drag to look, and click a mounted work to view it full screen." onWheel={walk} onPointerDown={beginDrag} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag}><Suspense fallback={<div className="scene-loader" aria-label="Loading exhibition" />}><LazyExhibitionScene progress={progress} look={look} activeWork={nearest.id} onSelect={setDetail} works={works} chapters={chapters} portalPositions={portalPositions} pathStartZ={PATH_START_Z} pathEndZ={PATH_END_Z} /></Suspense></section>
       <header className="space-header"><button className="wordmark" onClick={() => setMode('ask')}>Silenced <i>Voices</i></button><span>Room {currentChapter.number} / {currentChapter.title}</span><span className="space-count">54 boards</span></header>
       <nav className="chapter-nav" aria-label="Exhibition rooms">{chapters.map((chapter) => <button key={chapter.number} className={currentRoom === chapter.id ? 'active' : ''} onClick={() => jumpToRoom(chapter.id)} title={chapter.title}>{chapter.number}<span>{chapter.short}</span></button>)}</nav>
       <div className="space-caption"><span>{nearest.label}</span><div key={nearest.id}><p className="caption-kicker">{nearest.kicker}</p><h1>{nearest.title}</h1><p className="space-summary">{nearest.summary}</p><blockquote>{nearest.pull}</blockquote><button onClick={() => setDetail(nearest)}>View full image</button></div></div>
