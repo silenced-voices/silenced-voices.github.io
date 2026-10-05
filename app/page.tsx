@@ -462,9 +462,27 @@ export default function Home() {
   const endDrag = (event: React.PointerEvent) => { if (drag.current?.captured && event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); drag.current = null; };
   const walk = (event: React.WheelEvent) => { event.preventDefault(); walkTo(targetProgressRef.current + clamp(event.deltaY, -140, 140) * 0.000085); };
   const showRelative = (direction: number) => { if (!detail) return; const index = works.findIndex((work) => work.id === detail.id); setDetail(works[(index + direction + works.length) % works.length]); };
-  const enterExhibition = () => {
+  const enterExhibition = async () => {
+    if (opening) return;
     setOpening(true);
-    window.setTimeout(() => { setMode('space'); setOpening(false); }, 850);
+    const startedAt = performance.now();
+    const initialArtwork = works
+      .filter((work) => Math.abs(work.position[2] - PATH_START_Z) < 72)
+      .map((work) => work.image);
+    const warmImage = (source: string) => new Promise<void>((resolve) => {
+      const image = new Image();
+      image.decoding = 'async';
+      image.onload = () => { image.decode().catch(() => undefined).finally(resolve); };
+      image.onerror = () => resolve();
+      image.src = source;
+    });
+
+    await Promise.all([
+      import('./exhibition-scene').then((scene) => scene.preloadArtwork(initialArtwork)).catch(() => undefined),
+      ...initialArtwork.map(warmImage),
+    ]);
+    const remaining = Math.max(0, 1800 - (performance.now() - startedAt));
+    window.setTimeout(() => { setMode('space'); setOpening(false); }, remaining);
   };
 
   if (mode === 'ask') return (
@@ -487,7 +505,7 @@ export default function Home() {
         </button>
       </section>
       <footer className="opening-footer"><span>Scroll to walk · drag to look · click a work to enter</span><span>Chapters 00–10 + Appendix</span></footer>
-      <div className="opening-transition" aria-hidden="true"><span /><p>Entering the exhibition</p></div>
+      <div className="opening-transition" aria-hidden="true"><span /><p>Preparing the gallery</p></div>
     </main>
   );
 

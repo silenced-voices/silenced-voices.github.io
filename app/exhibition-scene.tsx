@@ -35,6 +35,10 @@ type SceneProps = {
   pathEndZ: number;
 };
 
+export function preloadArtwork(images: string[]) {
+  images.forEach((image) => useTexture.preload(image));
+}
+
 function ArtPanel({ work, active, onSelect }: { work: Work; active: boolean; onSelect: (work: Work) => void }) {
   const texture = useTexture(work.image);
   const [hovered, setHovered] = useState(false);
