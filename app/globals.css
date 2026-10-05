@@ -69,6 +69,11 @@ button:focus-visible{outline:2px solid #f4eee0;outline-offset:4px}
 .mobile-notice p{margin:0 0 1.3rem;color:#a8a195;text-transform:uppercase;letter-spacing:.28em;font:.55rem ui-monospace,monospace}.mobile-notice strong{display:block;max-width:20rem;font:400 clamp(2rem,9vw,3.2rem)/1.02 Georgia,serif}.mobile-notice span{display:block;max-width:17rem;margin:1.35rem auto 0;color:#a7a196;font:.75rem/1.6 Georgia,serif}
 
 .space-mode{position:fixed;inset:0;overflow:hidden;background:#020202}
+.space-mode.is-prewarming{z-index:70}
+.gallery-prewarm{position:absolute;z-index:80;inset:0;display:grid;place-items:center;overflow:hidden;background:#eee9dd;color:#121210;text-align:center}
+.gallery-prewarm:before{content:'';position:absolute;width:1px;height:8rem;background:#151512;transform:translateY(-1.1rem)}
+.gallery-prewarm p{position:relative;margin:0;padding-top:8rem;text-transform:uppercase;letter-spacing:.34em;font:.55rem ui-monospace,monospace}
+.gallery-prewarm small{position:absolute;top:calc(50% + 5.4rem);text-transform:uppercase;letter-spacing:.19em;color:#625e56;font:.45rem ui-monospace,monospace}
 .room-viewport{position:absolute;inset:0;z-index:1;cursor:grab;touch-action:none}
 .room-viewport:active{cursor:grabbing}
 .room-viewport canvas{display:block;width:100%!important;height:100%!important}

@@ -485,11 +485,14 @@ export default function Home() {
       ...allArtwork.map((source) => warmImage(source, initialArtwork.includes(source))),
     ]);
     await preparation;
-    const remaining = Math.max(0, 2200 - (performance.now() - startedAt));
+    // The gallery canvas mounts behind the entry screen while the image cache is
+    // filled. Keeping the screen up a little longer also gives WebGL a chance to
+    // compile its first shaders and upload the starting room before interaction.
+    const remaining = Math.max(0, 4200 - (performance.now() - startedAt));
     window.setTimeout(() => { setMode('space'); setOpening(false); }, remaining);
   };
 
-  if (mode === 'ask') return (
+  const landing = mode === 'ask' ? (
     <main className={`threshold ${opening ? 'is-entering' : ''}`}>
       <header className="opening-header"><span>Silenced Voices</span><span>A spatial research exhibition · 2026</span></header>
       <section className="opening-scene">
@@ -514,11 +517,14 @@ export default function Home() {
       <div className="opening-transition" aria-hidden="true"><span /><p>Preparing the gallery</p></div>
       {mobileNotice && <div className="mobile-notice" role="dialog" aria-modal="true" aria-label="Best viewing experience"><button onClick={() => setMobileNotice(false)} aria-label="Close message"><X /></button><p>Silenced Voices</p><strong>Please view this website on a laptop for the best viewing experience.</strong><span>The full spatial exhibition is designed for a larger screen.</span></div>}
     </main>
-  );
+  ) : null;
 
   return (
-    <main className={`space-mode room-${currentRoom} ${transitioning ? 'is-transitioning' : ''}`}>
+    <>
+      {landing}
+      {(opening || mode === 'space') && <main key="gallery" className={`space-mode room-${currentRoom} ${opening ? 'is-prewarming' : ''} ${transitioning ? 'is-transitioning' : ''}`}>
       <section className="room-viewport" aria-label="Interactive 3D exhibition. Scroll to walk, drag to look, and click a mounted work to view it full screen." onWheel={walk} onPointerDown={beginDrag} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag}><Suspense fallback={<div className="scene-loader" aria-label="Loading exhibition" />}><LazyExhibitionScene progress={progress} look={look} activeWork={nearest.id} onSelect={setDetail} works={works} chapters={chapters} portalPositions={portalPositions} pathStartZ={PATH_START_Z} pathEndZ={PATH_END_Z} /></Suspense></section>
+      {opening && <div className="gallery-prewarm" role="status" aria-live="polite"><span /><p>Preparing the gallery</p><small>Loading rooms for a smoother first walk</small></div>}
       <div className="gallery-atmosphere" aria-hidden="true"><span className="atmosphere-orbit" /><span className="atmosphere-beam beam-one" /><span className="atmosphere-beam beam-two" /></div>
       <div className="gallery-readout" aria-hidden="true"><span>EXHIBITION INDEX</span><b>{String(currentRoom + 1).padStart(2, '0')} / {String(chapters.length).padStart(2, '0')}</b><i>Spatial studies · listening architecture</i></div>
       <header className="space-header"><button className="wordmark" onClick={() => setMode('ask')}>Silenced <i>Voices</i></button><span>Room {currentChapter.number} / {currentChapter.title}</span></header>
@@ -532,7 +538,8 @@ export default function Home() {
       <div className="room-transition" aria-hidden={!transitioning}><p>Entering</p><strong>{enteringChapter.number}</strong><span>{enteringChapter.title}</span></div>
       <div className="door-flare" />
       <Detail work={detail} close={() => setDetail(null)} previous={() => showRelative(-1)} next={() => showRelative(1)} />
-    </main>
+      </main>}
+    </>
   );
 }
 
