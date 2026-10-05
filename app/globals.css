@@ -66,7 +66,6 @@ button:focus-visible{outline:2px solid #f4eee0;outline-offset:4px}
 
 .space-header{position:absolute;top:0;left:0;right:0;z-index:20;height:72px;padding:0 2.4vw;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;border-bottom:1px solid var(--line);background:linear-gradient(#050505d9,transparent);text-transform:uppercase;letter-spacing:.18em;font-size:.63rem;pointer-events:none}
 .space-header button{pointer-events:auto;color:inherit;border:0;background:none;cursor:pointer;text-transform:uppercase;letter-spacing:.17em}
-.space-count{text-align:right;color:#8f8a81;font:.55rem ui-monospace,monospace}
 .wordmark{font-family:Georgia,serif!important;font-size:1.05rem!important;text-transform:none!important;letter-spacing:0!important;text-align:left}
 .wordmark i{font-weight:400}
 
@@ -138,7 +137,6 @@ button:focus-visible{outline:2px solid #f4eee0;outline-offset:4px}
   .opening-stage{position:absolute;z-index:2;inset:2vh -27% auto 36%;height:74vh;opacity:.46}.opening-frame{height:min(54vh,500px)}.opening-halo{width:72vw}
   .opening-footer{height:48px;flex-basis:48px;padding:0 1rem}.opening-footer span:first-child{display:none}
   .space-header{grid-template-columns:1fr auto;height:62px}.space-header>span{display:none}
-  .space-count{font-size:.5rem}
   .chapter-nav{top:62px;justify-content:flex-start;padding:.4rem 1rem}.chapter-nav button.active span{display:none}
   .space-caption{top:108px;left:1rem;right:1rem;max-width:82%}.space-caption h1{font-size:1.5rem}.space-caption .space-summary{font-size:.66rem;line-height:1.45;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}.space-caption blockquote{display:none}.space-caption button{font-size:.48rem;margin-top:.65rem}
   .walk-instruction{bottom:4.5rem;font-size:.48rem;letter-spacing:.12em}

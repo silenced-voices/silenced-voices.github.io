@@ -4,7 +4,7 @@ import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, ThreeEvent, useFrame } from '@react-three/fiber';
 import { Edges, MeshReflectorMaterial, Sparkles, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
-import { ArrowLeft, ArrowRight, MousePointer2, Volume2, VolumeX, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, MousePointer2, X } from 'lucide-react';
 
 type Chapter = {
   id: number;
@@ -382,7 +382,6 @@ export default function Home() {
   const [mode, setMode] = useState<'ask' | 'space'>('ask');
   const [progress, setProgress] = useState(0);
   const [detail, setDetail] = useState<Work | null>(null);
-  const [sound, setSound] = useState(false);
   const [help, setHelp] = useState(true);
   const [opening, setOpening] = useState(false);
   const [look, setLook] = useState({ x: 0, y: 0 });
@@ -492,7 +491,7 @@ export default function Home() {
 
   if (mode === 'ask') return (
     <main className={`threshold ${opening ? 'is-entering' : ''}`}>
-      <header className="opening-header"><span>Silenced Voices</span><span>A spatial research exhibition · 2026</span><span>54 boards</span></header>
+      <header className="opening-header"><span>Silenced Voices</span><span>A spatial research exhibition · 2026</span></header>
       <section className="opening-scene">
         <div className="opening-copy">
           <p className="eyebrow">Chapter 00 · A personal beginning</p>
@@ -517,13 +516,13 @@ export default function Home() {
   return (
     <main className={`space-mode room-${currentRoom} ${transitioning ? 'is-transitioning' : ''}`}>
       <section className="room-viewport" aria-label="Interactive 3D exhibition. Scroll to walk, drag to look, and click a mounted work to view it full screen." onWheel={walk} onPointerDown={beginDrag} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag}><Suspense fallback={<div className="scene-loader" aria-label="Loading exhibition" />}><LazyExhibitionScene progress={progress} look={look} activeWork={nearest.id} onSelect={setDetail} works={works} chapters={chapters} portalPositions={portalPositions} pathStartZ={PATH_START_Z} pathEndZ={PATH_END_Z} /></Suspense></section>
-      <header className="space-header"><button className="wordmark" onClick={() => setMode('ask')}>Silenced <i>Voices</i></button><span>Room {currentChapter.number} / {currentChapter.title}</span><span className="space-count">54 boards</span></header>
+      <header className="space-header"><button className="wordmark" onClick={() => setMode('ask')}>Silenced <i>Voices</i></button><span>Room {currentChapter.number} / {currentChapter.title}</span></header>
       <nav className="chapter-nav" aria-label="Exhibition rooms">{chapters.map((chapter) => <button key={chapter.number} className={currentRoom === chapter.id ? 'active' : ''} onClick={() => jumpToRoom(chapter.id)} title={chapter.title}>{chapter.number}<span>{chapter.short}</span></button>)}</nav>
       <div className="space-caption"><span>{nearest.label}</span><div key={nearest.id}><p className="caption-kicker">{nearest.kicker}</p><h1>{nearest.title}</h1><p className="space-summary">{nearest.summary}</p><blockquote>{nearest.pull}</blockquote><button onClick={() => setDetail(nearest)}>View full image</button></div></div>
       <div className="walk-instruction">Scroll to walk · Drag to look · Click a work to enter</div>
       <div className="walk-progress" aria-hidden="true"><span style={{ width: `${Math.max(2, progress * 100)}%` }} /></div>
       <button className="nav-arrow prev" disabled={progress <= 0} onClick={() => walkTo(progress - 0.012)} aria-label="Walk backward"><ArrowLeft /></button><button className="nav-arrow next" disabled={progress >= 1} onClick={() => walkTo(progress + 0.012)} aria-label="Walk forward"><ArrowRight /></button>
-      <nav className="utility-nav" aria-label="Room controls"><button onClick={() => setHelp(!help)}><MousePointer2 /> Controls</button><button onClick={() => setSound(!sound)}>{sound ? <Volume2 /> : <VolumeX />} {sound ? 'Sound' : 'Quiet'}</button></nav>
+      <nav className="utility-nav" aria-label="Room controls"><button onClick={() => setHelp(!help)}><MousePointer2 /> Controls</button></nav>
       {help && <aside className="control-card"><button onClick={() => setHelp(false)} aria-label="Close controls"><X /></button><p>Scroll to walk · drag to look</p><strong>Your view now stays where you release it.</strong><span>Pass through each lit doorway to enter the next chapter. Click any mounted page to view it full screen.</span></aside>}
       <div className="room-transition" aria-hidden={!transitioning}><p>Entering</p><strong>{enteringChapter.number}</strong><span>{enteringChapter.title}</span></div>
       <div className="door-flare" />
