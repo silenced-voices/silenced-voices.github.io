@@ -426,7 +426,7 @@ export default function Home() {
     };
     animationFrame.current = window.requestAnimationFrame(advance);
   };
-  const jumpToRoom = (room: number) => walkTo(progressForZ(chapters[room].firstWorkZ + 2.1));
+  const jumpToRoom = (room: number) => walkTo(progressForZ(chapters[room].firstWorkZ + 4.1));
 
   useEffect(() => () => { if (animationFrame.current !== null) window.cancelAnimationFrame(animationFrame.current); }, []);
 
