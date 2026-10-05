@@ -356,7 +356,7 @@ function CameraRig({ progress, look }: { progress: number; look: { x: number; y:
     const targetX = Math.sin(progress * Math.PI * chapters.length * 1.15) * 0.12;
     camera.position.z = THREE.MathUtils.damp(camera.position.z, targetZ, 5.5, delta);
     camera.position.x = THREE.MathUtils.damp(camera.position.x, targetX, 4, delta);
-    camera.position.y = THREE.MathUtils.damp(camera.position.y, 2.02 + doorway * 0.07, 4, delta);
+    camera.position.y = THREE.MathUtils.damp(camera.position.y, 2.2 + doorway * 0.07, 4, delta);
     const yaw = THREE.MathUtils.degToRad(look.x);
     const pitch = THREE.MathUtils.degToRad(look.y);
     camera.lookAt(camera.position.x + Math.sin(yaw) * 12, camera.position.y + Math.sin(pitch) * 10, camera.position.z - Math.cos(yaw) * 12);
@@ -369,7 +369,7 @@ function CameraRig({ progress, look }: { progress: number; look: { x: number; y:
 
 function ExhibitionScene({ progress, look, activeWork, onSelect }: { progress: number; look: { x: number; y: number }; activeWork: string; onSelect: (work: Work) => void }) {
   return (
-    <Canvas dpr={[1, 1.55]} camera={{ position: [0, 2.02, PATH_START_Z], fov: 56, near: 0.1, far: 560 }} gl={{ antialias: true, powerPreference: 'high-performance' }}>
+    <Canvas dpr={[1, 1.55]} camera={{ position: [0, 2.2, PATH_START_Z], fov: 56, near: 0.1, far: 560 }} gl={{ antialias: true, powerPreference: 'high-performance' }}>
       <color attach="background" args={['#020202']} />
       <Suspense fallback={null}><Architecture />{works.map((work) => <ArtPanel key={work.id} work={work} active={work.id === activeWork} onSelect={onSelect} />)}</Suspense>
       <CameraRig progress={progress} look={look} />
