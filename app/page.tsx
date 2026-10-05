@@ -12,7 +12,9 @@ type Chapter = {
   short: string;
   title: string;
   boards: BoardRef[];
+  bays: BoardRef[][];
   firstWorkZ: number;
+  lastWorkZ: number;
   portalZ?: number;
 };
 
@@ -113,42 +115,61 @@ const copy: Record<number, { title: string; summary: string; pull: string }> = {
   29: { title: 'Research Ethics & Evidence Register', summary: 'The final board records ethical safeguards, source material, assets, and the evidence structure supporting the project.', pull: 'Appendix C–D' },
 };
 
-const BOARD_SPACING = 4.72;
+const BAY_SPACING = 6.15;
 const PORTAL_GAP = 4.5;
 let layoutCursor = 3.1;
 
-// Covers sit at the center threshold. These patterns deliberately let related
-// boards gather on one wall before the route crosses the room.
-const contentWallPatterns = [
-  [-1, -1, 1],
-  [-1, 1, 1, -1, 1],
-  [1, 1, -1],
-  [-1, 1, 1],
-  [1, -1, -1, 1],
-  [-1, -1, 1],
-  [1, -1, 1, 1, -1],
-  [-1, 1, 1, -1],
-  [1, 1, -1, 1],
-  [-1, 1, 1, -1],
+// Each depth bay holds no more than two portraits on a wall. A continuous
+// landscape spread is a bay by itself because it already carries two pages.
+const bayWallPatterns = [
+  [-1, 1],
+  [-1, 1, -1],
+  [1, -1],
+  [-1, 1],
+  [1, -1],
+  [-1, 1],
+  [1, -1, 1],
+  [-1, 1],
+  [1, -1],
+  [-1, 1],
   [-1],
-  [-1, -1, 1, 1],
+  [-1, 1],
 ];
+
+function groupIntoBays(boards: BoardRef[]) {
+  const cover = boards.find((item) => item.cover);
+  const content = boards.filter((item) => !item.cover);
+  const bays: BoardRef[][] = cover ? [[cover]] : [];
+  for (let index = 0; index < content.length;) {
+    const current = content[index];
+    if (current.fullSpread) {
+      bays.push([current]);
+      index += 1;
+    } else {
+      const next = content[index + 1];
+      bays.push(next && !next.fullSpread ? [current, next] : [current]);
+      index += next && !next.fullSpread ? 2 : 1;
+    }
+  }
+  return bays;
+}
 
 const chapters: Chapter[] = chapterSource.map((source, chapterIndex) => {
   const firstWorkZ = layoutCursor;
-  const lastWorkZ = firstWorkZ - (source.boards.length - 1) * BOARD_SPACING;
+  const bays = groupIntoBays(source.boards);
+  const lastWorkZ = firstWorkZ - (bays.length - 1) * BAY_SPACING;
   const portalZ = chapterIndex < chapterSource.length - 1 ? lastWorkZ - PORTAL_GAP : undefined;
   layoutCursor = portalZ === undefined ? lastWorkZ : portalZ - PORTAL_GAP;
-  return { ...source, id: chapterIndex, firstWorkZ, portalZ };
+  return { ...source, id: chapterIndex, bays, firstWorkZ, lastWorkZ, portalZ };
 });
 
-const works: Work[] = chapters.flatMap((chapter) => chapter.boards.map((item, index) => {
+const works: Work[] = chapters.flatMap((chapter) => chapter.bays.flatMap((bay, bayIndex) => bay.map((item, pairIndex) => {
   const source = copy[item.page];
-  const contentIndex = item.cover ? 0 : index - (chapter.boards[0].cover ? 1 : 0);
-  const side = item.cover ? 0 : contentWallPatterns[chapter.id][contentIndex] ?? (contentIndex % 2 === 0 ? -1 : 1);
+  const contentBayIndex = bayIndex - (chapter.bays[0][0].cover ? 1 : 0);
+  const side = item.cover ? 0 : bayWallPatterns[chapter.id][contentBayIndex] ?? (contentBayIndex % 2 === 0 ? -1 : 1);
   const label = item.half === 'full' ? (item.page === 1 ? '01' : String(item.page).padStart(2, '0')) : `${String(item.page).padStart(2, '0')}${item.half === 'left' ? 'L' : 'R'}`;
-  const xOffsets = [3.34, 3.66, 3.48];
-  const yOffsets = [2.38, 2.58, 2.47, 2.68];
+  const pairedX = side < 0 ? [-4.42, -1.92] : [1.92, 4.42];
+  const x = item.cover ? 0 : item.fullSpread ? side * 3.35 : bay.length === 2 ? pairedX[pairIndex] : side * 3.44;
   return {
     id: `${item.page}-${item.half}`,
     label,
@@ -160,11 +181,11 @@ const works: Work[] = chapters.flatMap((chapter) => chapter.boards.map((item, in
     image: `/boards/page-${String(item.page).padStart(2, '0')}-${item.half}.jpg`,
     summary: source.summary,
     pull: source.pull,
-    position: [item.cover ? 0 : side * xOffsets[(index + chapter.id) % xOffsets.length], item.cover ? 2.62 : yOffsets[(index + chapter.id) % yOffsets.length], chapter.firstWorkZ - index * BOARD_SPACING] as [number, number, number],
+    position: [x, item.cover ? 2.62 : item.fullSpread ? 2.48 : 2.52, chapter.firstWorkZ - bayIndex * BAY_SPACING] as [number, number, number],
     rotation: item.cover ? 0 : side < 0 ? 0.25 : -0.25,
     size: item.cover ? [2.46, 3.48] : item.fullSpread ? [4.5, 3.18] : [2.28, 3.22],
   };
-}));
+})));
 
 const PATH_START_Z = 8.2;
 const PATH_END_Z = works[works.length - 1].position[2] - 4.2;
@@ -254,8 +275,7 @@ function Portal({ z }: { z: number }) {
 
 function RoomDecor({ chapter }: { chapter: Chapter }) {
   const sculpture = useRef<THREE.Group>(null);
-  const lastWorkZ = chapter.firstWorkZ - (chapter.boards.length - 1) * BOARD_SPACING;
-  const z = lastWorkZ - 2.15;
+  const z = chapter.lastWorkZ - 2.15;
   const side = chapter.id % 2 === 0 ? 1 : -1;
   const accents = ['#c9c1ad', '#8d665f', '#79817a'];
   const accent = accents[chapter.id % accents.length];
