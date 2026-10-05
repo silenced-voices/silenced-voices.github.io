@@ -414,7 +414,7 @@ export default function Home() {
       lastWalkTime.current = time;
       const target = targetProgressRef.current;
       const distance = target - progressRef.current;
-      const nextProgress = Math.abs(distance) < 0.0002 ? target : progressRef.current + Math.sign(distance) * Math.min(Math.abs(distance), elapsed * 0.46);
+      const nextProgress = Math.abs(distance) < 0.0002 ? target : progressRef.current + Math.sign(distance) * Math.min(Math.abs(distance), elapsed * 0.3);
       progressRef.current = nextProgress;
       setProgress(nextProgress);
       if (Math.abs(target - nextProgress) > 0.0002) {
@@ -453,14 +453,14 @@ export default function Home() {
     if (drag.current.pointerType === 'touch') {
       const delta = drag.current.lastY - event.clientY;
       drag.current.lastY = event.clientY;
-      walkTo(targetProgressRef.current + delta * 0.00038);
+      walkTo(targetProgressRef.current + delta * 0.00026);
       setLook((value) => ({ ...value, x: clamp(drag.current!.baseX + (event.clientX - drag.current!.x) / 8, -12, 12) }));
       return;
     }
     setLook({ x: clamp(drag.current.baseX + (event.clientX - drag.current.x) / 10, -13, 13), y: clamp(drag.current.baseY - (event.clientY - drag.current.y) / 13, -7, 7) });
   };
   const endDrag = (event: React.PointerEvent) => { if (drag.current?.captured && event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); drag.current = null; };
-  const walk = (event: React.WheelEvent) => { event.preventDefault(); walkTo(targetProgressRef.current + clamp(event.deltaY, -180, 180) * 0.00014); };
+  const walk = (event: React.WheelEvent) => { event.preventDefault(); walkTo(targetProgressRef.current + clamp(event.deltaY, -140, 140) * 0.000085); };
   const showRelative = (direction: number) => { if (!detail) return; const index = works.findIndex((work) => work.id === detail.id); setDetail(works[(index + direction + works.length) % works.length]); };
   const enterExhibition = () => {
     setOpening(true);
