@@ -99,6 +99,14 @@ function ArtPanel({ work, active, onSelect }: { work: Work; active: boolean; onS
   );
 }
 
+function PanelPlaceholder({ work, active }: { work: Work; active: boolean }) {
+  return <group position={work.position} rotation={[0, work.rotation, 0]}>
+    <mesh position={[0, 0, -0.08]}><boxGeometry args={[work.size[0] + 0.18, work.size[1] + 0.18, 0.14]} /><meshStandardMaterial color="#090908" roughness={0.6} metalness={0.35} /><Edges color={active ? '#ded8ca' : '#3d3b37'} threshold={15} /></mesh>
+    <mesh position={[0, 0, 0.008]}><planeGeometry args={work.size} /><meshBasicMaterial color="#11110f" /></mesh>
+    <mesh position={[0, -work.size[1] / 2 - 0.22, -0.01]}><boxGeometry args={[1.25, 0.08, 0.04]} /><meshBasicMaterial color="#4d4a45" /></mesh>
+  </group>;
+}
+
 function Portal({ z }: { z: number }) {
   return <group position={[0, 0, z]}>
     <mesh position={[-4.05, 2.75, 0]}><boxGeometry args={[4.1, 5.5, 0.32]} /><meshStandardMaterial color="#070707" roughness={0.82} metalness={0.08} /><Edges color="#383734" /></mesh>
@@ -168,10 +176,23 @@ function CameraRig({ progress, look, portalPositions, pathStartZ, pathEndZ }: Pi
 
 export default function ExhibitionScene({ progress, look, activeWork, onSelect, works, chapters, portalPositions, pathStartZ, pathEndZ }: SceneProps) {
   const cameraZ = THREE.MathUtils.lerp(pathStartZ, pathEndZ, progress);
-  const nearbyWorks = works.filter((work) => Math.abs(work.position[2] - cameraZ) < 28);
+  const prefetched = useRef(new Set<string>());
+  const nearbyWorks = works.filter((work) => Math.abs(work.position[2] - cameraZ) < 42);
+
+  useEffect(() => {
+    works.filter((work) => Math.abs(work.position[2] - cameraZ) < 72).forEach((work) => {
+      if (prefetched.current.has(work.image)) return;
+      prefetched.current.add(work.image);
+      const image = new Image();
+      image.decoding = 'async';
+      image.src = work.image;
+    });
+  }, [cameraZ, works]);
+
   return <Canvas dpr={[1, 1.4]} camera={{ position: [0, 2.62, pathStartZ], fov: 56, near: 0.1, far: 560 }} gl={{ antialias: true, powerPreference: 'high-performance' }}>
     <color attach="background" args={['#020202']} />
-    <Suspense fallback={null}><Architecture chapters={chapters} portalPositions={portalPositions} pathStartZ={pathStartZ} pathEndZ={pathEndZ} />{nearbyWorks.map((work) => <ArtPanel key={work.id} work={work} active={work.id === activeWork} onSelect={onSelect} />)}</Suspense>
+    <Architecture chapters={chapters} portalPositions={portalPositions} pathStartZ={pathStartZ} pathEndZ={pathEndZ} />
+    {nearbyWorks.map((work) => <Suspense key={work.id} fallback={<PanelPlaceholder work={work} active={work.id === activeWork} />}><ArtPanel work={work} active={work.id === activeWork} onSelect={onSelect} /></Suspense>)}
     <CameraRig progress={progress} look={look} portalPositions={portalPositions} pathStartZ={pathStartZ} pathEndZ={pathEndZ} />
   </Canvas>;
 }
