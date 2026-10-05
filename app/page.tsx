@@ -169,6 +169,48 @@ function Portal({ z }: { z: number }) {
   );
 }
 
+function RoomDecor({ chapter }: { chapter: Chapter }) {
+  const sculpture = useRef<THREE.Group>(null);
+  const lastWorkZ = chapter.firstWorkZ - (chapter.pages.length - 1) * PAGE_SPACING;
+  const z = lastWorkZ - 2.15;
+  const side = chapter.id % 2 === 0 ? 1 : -1;
+  const accents = ['#c9c1ad', '#8d665f', '#79817a'];
+  const accent = accents[chapter.id % accents.length];
+
+  useFrame((_, delta) => {
+    if (!sculpture.current) return;
+    sculpture.current.rotation.y += delta * (chapter.id % 2 === 0 ? 0.12 : -0.12);
+    sculpture.current.rotation.z += delta * 0.025;
+  });
+
+  return (
+    <group>
+      <group position={[0, 0, z]}>
+        <mesh position={[0, 0.34, 0]}><boxGeometry args={[2.8, 0.13, 0.82]} /><meshStandardMaterial color="#11110f" roughness={0.42} metalness={0.58} /><Edges color="#5b5750" /></mesh>
+        <mesh position={[-1.05, 0.15, 0]}><boxGeometry args={[0.09, 0.3, 0.58]} /><meshBasicMaterial color="#4a4741" /></mesh>
+        <mesh position={[1.05, 0.15, 0]}><boxGeometry args={[0.09, 0.3, 0.58]} /><meshBasicMaterial color="#4a4741" /></mesh>
+        <mesh position={[0, 0.018, 0]}><boxGeometry args={[4.5, 0.018, 1.3]} /><meshBasicMaterial color={accent} transparent opacity={0.13} /></mesh>
+      </group>
+
+      <group position={[side * 4.72, 0, z - 1.25]}>
+        <mesh position={[0, 0.62, 0]}><boxGeometry args={[1.08, 1.24, 1.08]} /><meshStandardMaterial color="#0b0b0a" roughness={0.35} metalness={0.68} transparent opacity={0.82} /><Edges color={accent} /></mesh>
+        <group ref={sculpture} position={[0, 2.05, 0]}>
+          <mesh><torusGeometry args={[0.54, 0.024, 8, 56]} /><meshBasicMaterial color={accent} transparent opacity={0.78} /></mesh>
+          <mesh rotation={[Math.PI / 2, 0.35, 0]}><torusGeometry args={[0.37, 0.018, 8, 48]} /><meshBasicMaterial color="#ded8ca" transparent opacity={0.56} /></mesh>
+          <mesh rotation={[0.4, Math.PI / 2, 0.25]}><torusGeometry args={[0.7, 0.014, 8, 64]} /><meshBasicMaterial color={accent} transparent opacity={0.38} /></mesh>
+          <mesh><sphereGeometry args={[0.08, 12, 12]} /><meshBasicMaterial color="#f1ece0" /></mesh>
+        </group>
+        <pointLight position={[0, 1.65, 0.8]} color={accent} intensity={2.2} distance={5.5} decay={2} />
+      </group>
+
+      <group position={[-side * 5.15, 0, z + 1.8]}>
+        {[0, 0.36, 0.72].map((offset, index) => <mesh key={offset} position={[offset * side, 2.1 + index * 0.36, 0]}><boxGeometry args={[0.035, 4.2 - index * 0.72, 0.035]} /><meshBasicMaterial color={index === 1 ? accent : '#6e6a62'} transparent opacity={0.72} /></mesh>)}
+        <mesh position={[0.36 * side, 4.7, 0]}><sphereGeometry args={[0.09, 12, 12]} /><meshBasicMaterial color={accent} /></mesh>
+      </group>
+    </group>
+  );
+}
+
 function Architecture() {
   const centerZ = (PATH_START_Z + PATH_END_Z) / 2;
   const length = PATH_LENGTH + 16;
@@ -188,6 +230,7 @@ function Architecture() {
       <gridHelper args={[length, Math.ceil(length / 4), '#393834', '#111111']} position={[6, 2.75, centerZ]} rotation={[0, 0, Math.PI / 2]} />
       {ribs.map((z) => <group key={z} position={[0, 0, z]}><mesh position={[-5.82, 2.75, 0]}><boxGeometry args={[0.06, 5.5, 0.06]} /><meshBasicMaterial color="#4a4945" /></mesh><mesh position={[5.82, 2.75, 0]}><boxGeometry args={[0.06, 5.5, 0.06]} /><meshBasicMaterial color="#4a4945" /></mesh><mesh position={[0, 5.36, 0]}><boxGeometry args={[11.7, 0.06, 0.06]} /><meshBasicMaterial color="#43413d" /></mesh></group>)}
       {portalPositions.map((z) => <Portal key={z} z={z} />)}
+      {chapters.map((chapter) => <RoomDecor key={chapter.number} chapter={chapter} />)}
       <mesh position={[0, 2.75, PATH_END_Z - 1]}><boxGeometry args={[12, 5.5, 0.35]} /><meshStandardMaterial color="#050505" roughness={0.86} /><Edges color="#353431" /></mesh>
       <Sparkles count={420} scale={[11, 5.2, length]} position={[0, 2.8, centerZ]} size={1.25} speed={0.07} opacity={0.36} color="#d6d2c8" />
     </>
@@ -306,7 +349,7 @@ export default function Home() {
       <section className="room-viewport" aria-label="Interactive 3D exhibition. Scroll to walk, drag to look, and click a mounted work to view it full screen." onWheel={walk} onPointerDown={beginDrag} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag}><ExhibitionScene progress={progress} look={look} activeWork={nearest.id} onSelect={setDetail} /></section>
       <header className="space-header"><button className="wordmark" onClick={() => setMode('ask')}>Silenced <i>Voices</i></button><span>Room {currentChapter.number} / {currentChapter.title}</span><span className="space-count">29 works</span></header>
       <nav className="chapter-nav" aria-label="Exhibition rooms">{chapters.map((chapter) => <button key={chapter.number} className={currentRoom === chapter.id ? 'active' : ''} onClick={() => jumpToRoom(chapter.id)} title={chapter.title}>{chapter.number}<span>{chapter.short}</span></button>)}</nav>
-      <div className="space-caption"><span>{String(nearest.id).padStart(2, '0')}</span><div><p>{nearest.kicker}</p><h1>{nearest.title}</h1><button onClick={() => setDetail(nearest)}>View full image</button></div></div>
+      <div className="space-caption"><span>{String(nearest.id).padStart(2, '0')}</span><div key={nearest.id}><p className="caption-kicker">{nearest.kicker}</p><h1>{nearest.title}</h1><p className="space-summary">{nearest.summary}</p><blockquote>{nearest.pull}</blockquote><button onClick={() => setDetail(nearest)}>View full image</button></div></div>
       <div className="walk-instruction">Scroll to walk · Drag to look · Click a work to enter</div>
       <div className="walk-progress" aria-hidden="true"><span style={{ width: `${Math.max(2, progress * 100)}%` }} /></div>
       <button className="nav-arrow prev" disabled={progress <= 0} onClick={() => walkTo(progress - 0.045)} aria-label="Walk backward"><ArrowLeft /></button><button className="nav-arrow next" disabled={progress >= 1} onClick={() => walkTo(progress + 0.045)} aria-label="Walk forward"><ArrowRight /></button>
