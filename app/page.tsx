@@ -11,13 +11,23 @@ type Chapter = {
   number: string;
   short: string;
   title: string;
-  pages: number[];
+  boards: BoardRef[];
   firstWorkZ: number;
   portalZ?: number;
 };
 
+type BoardRef = {
+  page: number;
+  half: 'full' | 'left' | 'right';
+  title: string;
+  cover?: boolean;
+};
+
 type Work = {
-  id: number;
+  id: string;
+  label: string;
+  sourcePage: number;
+  cover: boolean;
   room: number;
   kicker: string;
   title: string;
@@ -29,19 +39,45 @@ type Work = {
   size: [number, number];
 };
 
+const board = (page: number, half: BoardRef['half'], title: string, cover = false): BoardRef => ({ page, half, title, cover });
+
 const chapterSource = [
-  { number: '00', short: 'Prologue', title: 'A Personal Beginning', pages: [1, 2] },
-  { number: '01', short: 'Losing a Voice', title: 'Who Is Losing a Voice?', pages: [3, 4, 5] },
-  { number: '02', short: 'The Lost Window', title: 'The Lost Window', pages: [6, 7] },
-  { number: '03', short: 'Marginalized', title: 'The Marginalized Treatment', pages: [8, 9, 10] },
-  { number: '04', short: 'History', title: 'History of Aphasia', pages: [11, 12] },
-  { number: '05', short: 'Gentle Silence', title: 'The Gentle Silence', pages: [13, 14, 15] },
-  { number: '06', short: 'Field Notes', title: 'Making Silence Visible', pages: [16, 17, 18, 19] },
-  { number: '07', short: 'Rehabilitation', title: 'Rehabilitation', pages: [20] },
-  { number: '08', short: 'SilentCare', title: 'SilentCare', pages: [21, 22, 23] },
-  { number: '09', short: 'Expression', title: 'The Right to Expression', pages: [24, 25] },
-  { number: '10', short: 'Learning to Wait', title: 'Learning How to Wait', pages: [26, 27] },
-  { number: 'A', short: 'Appendix', title: 'Research Appendix', pages: [28, 29] },
+  { number: '00', short: 'Prologue', title: 'A Personal Beginning', boards: [
+    board(1, 'full', 'Silenced Voices', true), board(2, 'left', 'What I Could Still Say'), board(2, 'right', 'I Want to Turn on the Light'), board(3, 'left', 'When a Person Loses Language, What Else Is Lost?'),
+  ] },
+  { number: '01', short: 'Losing a Voice', title: 'Who Is Losing a Voice?', boards: [
+    board(3, 'right', 'Who Is Losing a Voice?', true), board(4, 'left', 'Aphasia Is Not a Refusal to Speak'), board(4, 'right', 'The Thought Remains'), board(5, 'left', 'The Family Caregiver'), board(5, 'right', 'The Rehabilitation Professional'), board(6, 'left', 'Aphasia Is Not an Individual Problem'),
+  ] },
+  { number: '02', short: 'The Lost Window', title: 'The Lost Window', boards: [
+    board(6, 'right', 'The Lost Window', true), board(7, 'left', 'Everyday Care'), board(7, 'right', 'Two Timelines'), board(8, 'left', 'The Need to Communicate Does Not Wait'),
+  ] },
+  { number: '03', short: 'Marginalized', title: 'The Marginalized Treatment', boards: [
+    board(8, 'right', 'The Marginalized Treatment', true), board(9, 'left', 'A Step Can Be Seen'), board(9, 'right', 'Support Shelves'), board(10, 'left', 'Recognition Must Reinforce Itself'), board(10, 'right', 'Opportunities to Confirm and Shrink'),
+  ] },
+  { number: '04', short: 'History', title: 'History of Aphasia', boards: [
+    board(11, 'left', 'History of Aphasia', true), board(11, 'right', 'From Localization to Participation'), board(12, 'left', 'When Professional Care Recedes'), board(12, 'right', 'Public Medical Issue Versus Household Problem'), board(13, 'left', 'Recognition Is Not Enough'),
+  ] },
+  { number: '05', short: 'Gentle Silence', title: 'The Gentle Silence', boards: [
+    board(13, 'right', 'The Gentle Silence', true), board(14, 'left', 'I Have Something to Say'), board(14, 'right', 'We Thought This Was Care'), board(15, 'left', 'Care Can Silence'), board(15, 'right', 'Fed, Warm, Medicated — Is That Enough?'),
+  ] },
+  { number: '06', short: 'Field Notes', title: 'Making Silence Visible', boards: [
+    board(16, 'left', 'Field Notes: Making Silence Visible', true), board(16, 'right', 'How Were These Voices Collected?'), board(17, 'left', 'Five Participants, Five Forms of Silence'), board(17, 'right', 'A System Between Expertise and Capacity'), board(18, 'left', 'What the Voices Revealed'), board(18, 'right', 'Scenes Without Sound'),
+  ] },
+  { number: '07', short: 'Rehabilitation', title: 'Rehabilitation', boards: [
+    board(19, 'left', 'Rehabilitation', true), board(19, 'right', 'The Rehabilitation Process'), board(20, 'left', 'Geometry of Training Materials'), board(20, 'right', "The Therapist’s Invisible Labor"), board(21, 'left', 'Please Wait. Let Them Finish.'),
+  ] },
+  { number: '08', short: 'SilentCare', title: 'SilentCare', boards: [
+    board(21, 'right', 'SilentCare', true), board(22, 'left', 'Five Iterations Toward a Wearable System'), board(22, 'right', 'Capacitive Touch and Haptic Feedback'), board(23, 'left', 'From Sensor Data to a State'), board(23, 'right', 'Caregiver Application'),
+  ] },
+  { number: '09', short: 'Expression', title: 'The Right to Expression', boards: [
+    board(24, 'left', 'The Right to Expression', true), board(24, 'right', 'Six Changes a Family Can Begin Today'), board(25, 'left', 'Rehabilitation Should Not End at Discharge'), board(25, 'right', 'Students Can Become Part of the Listening System'), board(26, 'left', 'From One Family to a Public Issue'),
+  ] },
+  { number: '10', short: 'Learning to Wait', title: 'Learning How to Wait', boards: [
+    board(26, 'right', 'Learning How to Wait', true), board(27, 'left', 'How Does a Voice Return?'), board(27, 'right', 'A Voice Returns Through Time'),
+  ] },
+  { number: 'A', short: 'Appendix', title: 'Research Appendix', boards: [
+    board(28, 'left', 'Interview Guide'), board(28, 'right', 'Public Awareness Survey'), board(29, 'left', 'Research Ethics'), board(29, 'right', 'Asset & Evidence Register'),
+  ] },
 ];
 
 const copy: Record<number, { title: string; summary: string; pull: string }> = {
@@ -76,32 +112,39 @@ const copy: Record<number, { title: string; summary: string; pull: string }> = {
   29: { title: 'Research Ethics & Evidence Register', summary: 'The final board records ethical safeguards, source material, assets, and the evidence structure supporting the project.', pull: 'Appendix C–D' },
 };
 
-const PAGE_SPACING = 5.9;
-const PORTAL_GAP = 4.6;
+const BOARD_SPACING = 4.72;
+const PORTAL_GAP = 4.5;
 let layoutCursor = 3.1;
 
 const chapters: Chapter[] = chapterSource.map((source, chapterIndex) => {
   const firstWorkZ = layoutCursor;
-  const lastWorkZ = firstWorkZ - (source.pages.length - 1) * PAGE_SPACING;
+  const lastWorkZ = firstWorkZ - (source.boards.length - 1) * BOARD_SPACING;
   const portalZ = chapterIndex < chapterSource.length - 1 ? lastWorkZ - PORTAL_GAP : undefined;
   layoutCursor = portalZ === undefined ? lastWorkZ : portalZ - PORTAL_GAP;
   return { ...source, id: chapterIndex, firstWorkZ, portalZ };
 });
 
-const works: Work[] = chapters.flatMap((chapter) => chapter.pages.map((page, index) => {
-  const source = copy[page];
-  const left = index % 2 === 0;
+const works: Work[] = chapters.flatMap((chapter) => chapter.boards.map((item, index) => {
+  const source = copy[item.page];
+  const contentIndex = item.cover ? 0 : index - (chapter.boards[0].cover ? 1 : 0);
+  const side = item.cover ? 0 : contentIndex % 2 === 0 ? -1 : 1;
+  const label = item.half === 'full' ? '01' : `${String(item.page).padStart(2, '0')}${item.half === 'left' ? 'L' : 'R'}`;
+  const xOffsets = [3.34, 3.66, 3.48];
+  const yOffsets = [2.38, 2.58, 2.47, 2.68];
   return {
-    id: page,
+    id: `${item.page}-${item.half}`,
+    label,
+    sourcePage: item.page,
+    cover: Boolean(item.cover),
     room: chapter.id,
     kicker: `${chapter.number} · ${chapter.title}`,
-    title: source.title,
-    image: `/exhibition/page-${String(page).padStart(2, '0')}.jpg`,
+    title: item.title,
+    image: `/boards/page-${String(item.page).padStart(2, '0')}-${item.half}.jpg`,
     summary: source.summary,
     pull: source.pull,
-    position: [left ? -3.5 : 3.5, page === 1 ? 2.55 : 2.45, chapter.firstWorkZ - index * PAGE_SPACING] as [number, number, number],
-    rotation: left ? 0.27 : -0.27,
-    size: page === 1 ? [2.2, 3.12] : [3.7, 2.62],
+    position: [item.cover ? 0 : side * xOffsets[(index + chapter.id) % xOffsets.length], item.cover ? 2.62 : yOffsets[(index + chapter.id) % yOffsets.length], chapter.firstWorkZ - index * BOARD_SPACING] as [number, number, number],
+    rotation: item.cover ? 0 : side < 0 ? 0.25 : -0.25,
+    size: item.cover ? [2.46, 3.48] : [2.28, 3.22],
   };
 }));
 
@@ -121,6 +164,9 @@ function chapterForZ(z: number) {
 function ArtPanel({ work, active, onSelect }: { work: Work; active: boolean; onSelect: (work: Work) => void }) {
   const texture = useTexture(work.image);
   const [hovered, setHovered] = useState(false);
+  const group = useRef<THREE.Group>(null);
+  const coverLight = useRef<THREE.PointLight>(null);
+  const fade = useRef(1);
 
   useEffect(() => {
     texture.colorSpace = THREE.SRGBColorSpace;
@@ -133,6 +179,23 @@ function ArtPanel({ work, active, onSelect }: { work: Work; active: boolean; onS
     return () => { document.body.style.cursor = 'default'; };
   }, [hovered]);
 
+  useFrame(({ camera }, delta) => {
+    if (!work.cover || !group.current) return;
+    const target = THREE.MathUtils.clamp((camera.position.z - work.position[2] + 0.62) / 1.52, 0, 1);
+    fade.current = THREE.MathUtils.damp(fade.current, target, 8, delta);
+    group.current.visible = fade.current > 0.012;
+    group.current.traverse((child) => {
+      if (!(child instanceof THREE.Mesh || child instanceof THREE.LineSegments)) return;
+      const materials = Array.isArray(child.material) ? child.material : [child.material];
+      materials.forEach((material) => {
+        material.transparent = true;
+        material.opacity = fade.current;
+        material.depthWrite = fade.current > 0.96;
+      });
+    });
+    if (coverLight.current) coverLight.current.intensity = (active || hovered ? 3.2 : 1.15) * fade.current;
+  });
+
   const select = (event: ThreeEvent<MouseEvent>) => {
     event.stopPropagation();
     if (event.delta > 6) return;
@@ -140,7 +203,7 @@ function ArtPanel({ work, active, onSelect }: { work: Work; active: boolean; onS
   };
 
   return (
-    <group position={work.position} rotation={[0, work.rotation, 0]}>
+    <group ref={group} position={work.position} rotation={[0, work.rotation, 0]}>
       <mesh position={[0, 0, -0.08]} onClick={select}>
         <boxGeometry args={[work.size[0] + 0.18, work.size[1] + 0.18, 0.14]} />
         <meshStandardMaterial color="#0a0a09" roughness={0.5} metalness={0.45} />
@@ -150,7 +213,7 @@ function ArtPanel({ work, active, onSelect }: { work: Work; active: boolean; onS
         <planeGeometry args={work.size} />
         <meshBasicMaterial map={texture} toneMapped={false} />
       </mesh>
-      <pointLight position={[0, 1.2, 1.4]} color="#fff4dc" intensity={active || hovered ? 3.2 : 1.15} distance={7} decay={2} />
+      <pointLight ref={coverLight} position={[0, 1.2, 1.4]} color="#fff4dc" intensity={active || hovered ? 3.2 : 1.15} distance={7} decay={2} />
       <mesh position={[0, -work.size[1] / 2 - 0.22, -0.01]}><boxGeometry args={[1.25, 0.08, 0.04]} /><meshBasicMaterial color={active ? '#d7d1c4' : '#4d4a45'} /></mesh>
     </group>
   );
@@ -171,7 +234,7 @@ function Portal({ z }: { z: number }) {
 
 function RoomDecor({ chapter }: { chapter: Chapter }) {
   const sculpture = useRef<THREE.Group>(null);
-  const lastWorkZ = chapter.firstWorkZ - (chapter.pages.length - 1) * PAGE_SPACING;
+  const lastWorkZ = chapter.firstWorkZ - (chapter.boards.length - 1) * BOARD_SPACING;
   const z = lastWorkZ - 2.15;
   const side = chapter.id % 2 === 0 ? 1 : -1;
   const accents = ['#c9c1ad', '#8d665f', '#79817a'];
@@ -256,9 +319,9 @@ function CameraRig({ progress, look }: { progress: number; look: { x: number; y:
   return null;
 }
 
-function ExhibitionScene({ progress, look, activeWork, onSelect }: { progress: number; look: { x: number; y: number }; activeWork: number; onSelect: (work: Work) => void }) {
+function ExhibitionScene({ progress, look, activeWork, onSelect }: { progress: number; look: { x: number; y: number }; activeWork: string; onSelect: (work: Work) => void }) {
   return (
-    <Canvas dpr={[1, 1.55]} camera={{ position: [0, 1.68, PATH_START_Z], fov: 56, near: 0.1, far: 420 }} gl={{ antialias: true, powerPreference: 'high-performance' }}>
+    <Canvas dpr={[1, 1.55]} camera={{ position: [0, 1.68, PATH_START_Z], fov: 56, near: 0.1, far: 560 }} gl={{ antialias: true, powerPreference: 'high-performance' }}>
       <color attach="background" args={['#020202']} />
       <Suspense fallback={null}><Architecture />{works.map((work) => <ArtPanel key={work.id} work={work} active={work.id === activeWork} onSelect={onSelect} />)}</Suspense>
       <CameraRig progress={progress} look={look} />
@@ -292,8 +355,8 @@ export default function Home() {
     const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') { setDetail(null); setHelp(false); }
       if (mode !== 'space' || detail) return;
-      if (['ArrowDown', 'ArrowRight', 's', 'd'].includes(event.key.toLowerCase())) setProgress((value) => clamp(value + 0.022));
-      if (['ArrowUp', 'ArrowLeft', 'w', 'a'].includes(event.key.toLowerCase())) setProgress((value) => clamp(value - 0.022));
+      if (['ArrowDown', 'ArrowRight', 's', 'd'].includes(event.key.toLowerCase())) setProgress((value) => clamp(value + 0.012));
+      if (['ArrowUp', 'ArrowLeft', 'w', 'a'].includes(event.key.toLowerCase())) setProgress((value) => clamp(value - 0.012));
       if (event.key === 'Enter') setDetail(nearest);
     };
     window.addEventListener('keydown', onKey);
@@ -311,14 +374,14 @@ export default function Home() {
     if (drag.current.pointerType === 'touch') {
       const delta = drag.current.lastY - event.clientY;
       drag.current.lastY = event.clientY;
-      setProgress((value) => clamp(value + delta * 0.00072));
+      setProgress((value) => clamp(value + delta * 0.00038));
       setLook((value) => ({ ...value, x: clamp(drag.current!.baseX + (event.clientX - drag.current!.x) / 8, -12, 12) }));
       return;
     }
     setLook({ x: clamp(drag.current.baseX + (event.clientX - drag.current.x) / 10, -13, 13), y: clamp(drag.current.baseY - (event.clientY - drag.current.y) / 13, -7, 7) });
   };
   const endDrag = (event: React.PointerEvent) => { if (drag.current?.captured && event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); drag.current = null; };
-  const walk = (event: React.WheelEvent) => { event.preventDefault(); setProgress((value) => clamp(value + clamp(event.deltaY, -180, 180) * 0.00024)); };
+  const walk = (event: React.WheelEvent) => { event.preventDefault(); setProgress((value) => clamp(value + clamp(event.deltaY, -180, 180) * 0.00014)); };
   const showRelative = (direction: number) => { if (!detail) return; const index = works.findIndex((work) => work.id === detail.id); setDetail(works[(index + direction + works.length) % works.length]); };
   const enterExhibition = () => {
     setOpening(true);
@@ -327,7 +390,7 @@ export default function Home() {
 
   if (mode === 'ask') return (
     <main className={`threshold ${opening ? 'is-entering' : ''}`}>
-      <header className="opening-header"><span>Silenced Voices</span><span>A spatial research exhibition · 2026</span><span>29 works</span></header>
+      <header className="opening-header"><span>Silenced Voices</span><span>A spatial research exhibition · 2026</span><span>57 boards</span></header>
       <section className="opening-scene">
         <div className="opening-copy">
           <p className="eyebrow">Chapter 00 · A personal beginning</p>
@@ -339,7 +402,7 @@ export default function Home() {
         </div>
         <button className="opening-stage" onClick={enterExhibition} aria-label="Enter the spatial exhibition">
           <span className="opening-halo" />
-          <span className="opening-frame"><img src="/exhibition/page-01.jpg" alt="Silenced Voices exhibition cover" /></span>
+          <span className="opening-frame"><img src="/boards/page-01-full.jpg" alt="Silenced Voices exhibition cover" /></span>
           <span className="opening-shadow" />
           <span className="opening-index">00 / Threshold</span>
         </button>
@@ -352,12 +415,12 @@ export default function Home() {
   return (
     <main className={`space-mode room-${currentRoom} ${transitioning ? 'is-transitioning' : ''}`}>
       <section className="room-viewport" aria-label="Interactive 3D exhibition. Scroll to walk, drag to look, and click a mounted work to view it full screen." onWheel={walk} onPointerDown={beginDrag} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag}><ExhibitionScene progress={progress} look={look} activeWork={nearest.id} onSelect={setDetail} /></section>
-      <header className="space-header"><button className="wordmark" onClick={() => setMode('ask')}>Silenced <i>Voices</i></button><span>Room {currentChapter.number} / {currentChapter.title}</span><span className="space-count">29 works</span></header>
+      <header className="space-header"><button className="wordmark" onClick={() => setMode('ask')}>Silenced <i>Voices</i></button><span>Room {currentChapter.number} / {currentChapter.title}</span><span className="space-count">57 boards</span></header>
       <nav className="chapter-nav" aria-label="Exhibition rooms">{chapters.map((chapter) => <button key={chapter.number} className={currentRoom === chapter.id ? 'active' : ''} onClick={() => jumpToRoom(chapter.id)} title={chapter.title}>{chapter.number}<span>{chapter.short}</span></button>)}</nav>
-      <div className="space-caption"><span>{String(nearest.id).padStart(2, '0')}</span><div key={nearest.id}><p className="caption-kicker">{nearest.kicker}</p><h1>{nearest.title}</h1><p className="space-summary">{nearest.summary}</p><blockquote>{nearest.pull}</blockquote><button onClick={() => setDetail(nearest)}>View full image</button></div></div>
+      <div className="space-caption"><span>{nearest.label}</span><div key={nearest.id}><p className="caption-kicker">{nearest.kicker}</p><h1>{nearest.title}</h1><p className="space-summary">{nearest.summary}</p><blockquote>{nearest.pull}</blockquote><button onClick={() => setDetail(nearest)}>View full image</button></div></div>
       <div className="walk-instruction">Scroll to walk · Drag to look · Click a work to enter</div>
       <div className="walk-progress" aria-hidden="true"><span style={{ width: `${Math.max(2, progress * 100)}%` }} /></div>
-      <button className="nav-arrow prev" disabled={progress <= 0} onClick={() => walkTo(progress - 0.045)} aria-label="Walk backward"><ArrowLeft /></button><button className="nav-arrow next" disabled={progress >= 1} onClick={() => walkTo(progress + 0.045)} aria-label="Walk forward"><ArrowRight /></button>
+      <button className="nav-arrow prev" disabled={progress <= 0} onClick={() => walkTo(progress - 0.012)} aria-label="Walk backward"><ArrowLeft /></button><button className="nav-arrow next" disabled={progress >= 1} onClick={() => walkTo(progress + 0.012)} aria-label="Walk forward"><ArrowRight /></button>
       <nav className="utility-nav" aria-label="Room controls"><button onClick={() => setHelp(!help)}><MousePointer2 /> Controls</button><button onClick={() => setSound(!sound)}>{sound ? <Volume2 /> : <VolumeX />} {sound ? 'Sound' : 'Quiet'}</button></nav>
       {help && <aside className="control-card"><button onClick={() => setHelp(false)} aria-label="Close controls"><X /></button><p>Scroll to walk · drag to look</p><strong>Your view now stays where you release it.</strong><span>Pass through each lit doorway to enter the next chapter. Click any mounted page to view it full screen.</span></aside>}
       <div className="room-transition" aria-hidden={!transitioning}><p>Entering</p><strong>{enteringChapter.number}</strong><span>{enteringChapter.title}</span></div>
