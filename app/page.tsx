@@ -116,6 +116,23 @@ const BOARD_SPACING = 4.72;
 const PORTAL_GAP = 4.5;
 let layoutCursor = 3.1;
 
+// Covers sit at the center threshold. These patterns deliberately let related
+// boards gather on one wall before the route crosses the room.
+const contentWallPatterns = [
+  [-1, -1, 1],
+  [-1, 1, 1, -1, 1],
+  [1, 1, -1],
+  [-1, 1, 1, -1],
+  [1, -1, -1, 1],
+  [-1, -1, 1, -1],
+  [1, -1, 1, 1, -1],
+  [-1, 1, 1, -1],
+  [1, 1, -1, 1],
+  [-1, 1, 1, -1],
+  [-1, 1],
+  [-1, -1, 1, 1],
+];
+
 const chapters: Chapter[] = chapterSource.map((source, chapterIndex) => {
   const firstWorkZ = layoutCursor;
   const lastWorkZ = firstWorkZ - (source.boards.length - 1) * BOARD_SPACING;
@@ -127,7 +144,7 @@ const chapters: Chapter[] = chapterSource.map((source, chapterIndex) => {
 const works: Work[] = chapters.flatMap((chapter) => chapter.boards.map((item, index) => {
   const source = copy[item.page];
   const contentIndex = item.cover ? 0 : index - (chapter.boards[0].cover ? 1 : 0);
-  const side = item.cover ? 0 : contentIndex % 2 === 0 ? -1 : 1;
+  const side = item.cover ? 0 : contentWallPatterns[chapter.id][contentIndex] ?? (contentIndex % 2 === 0 ? -1 : 1);
   const label = item.half === 'full' ? '01' : `${String(item.page).padStart(2, '0')}${item.half === 'left' ? 'L' : 'R'}`;
   const xOffsets = [3.34, 3.66, 3.48];
   const yOffsets = [2.38, 2.58, 2.47, 2.68];
