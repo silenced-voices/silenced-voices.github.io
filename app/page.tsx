@@ -528,7 +528,7 @@ export default function Home() {
       <div className="walk-progress" aria-hidden="true"><span style={{ width: `${Math.max(2, progress * 100)}%` }} /></div>
       <button className="nav-arrow prev" disabled={progress <= 0} onClick={() => walkTo(progress - 0.012)} aria-label="Walk backward"><ArrowLeft /></button><button className="nav-arrow next" disabled={progress >= 1} onClick={() => walkTo(progress + 0.012)} aria-label="Walk forward"><ArrowRight /></button>
       <nav className="utility-nav" aria-label="Room controls"><button onClick={() => setHelp(!help)}><MousePointer2 /> Controls</button></nav>
-      {help && <aside className="control-card"><button onClick={() => setHelp(false)} aria-label="Close controls"><X /></button><p>Scroll to walk · drag to look</p><strong>Your view now stays where you release it.</strong><span>Pass through each lit doorway to enter the next chapter. Click any mounted page to view it full screen.</span></aside>}
+      {help && <aside className="control-card"><button onClick={() => setHelp(false)} aria-label="Close controls"><X /></button><p>Scroll to walk · drag to look</p><span>Pass through each lit doorway to enter the next chapter. Click any mounted page to view it full screen.</span></aside>}
       <div className="room-transition" aria-hidden={!transitioning}><p>Entering</p><strong>{enteringChapter.number}</strong><span>{enteringChapter.title}</span></div>
       <div className="door-flare" />
       <Detail work={detail} close={() => setDetail(null)} previous={() => showRelative(-1)} next={() => showRelative(1)} />
