@@ -274,7 +274,7 @@ export default function Home() {
   const [help, setHelp] = useState(true);
   const [opening, setOpening] = useState(false);
   const [look, setLook] = useState({ x: 0, y: 0 });
-  const drag = useRef<{ x: number; y: number; lastY: number; pointerType: string; baseX: number; baseY: number } | null>(null);
+  const drag = useRef<{ x: number; y: number; lastY: number; pointerType: string; baseX: number; baseY: number; captured: boolean } | null>(null);
 
   const cameraZ = THREE.MathUtils.lerp(PATH_START_Z, PATH_END_Z, progress);
   const currentRoom = chapterForZ(cameraZ);
@@ -300,9 +300,14 @@ export default function Home() {
     return () => window.removeEventListener('keydown', onKey);
   }, [detail, mode, nearest]);
 
-  const beginDrag = (event: React.PointerEvent) => { event.currentTarget.setPointerCapture(event.pointerId); drag.current = { x: event.clientX, y: event.clientY, lastY: event.clientY, pointerType: event.pointerType, baseX: look.x, baseY: look.y }; };
+  const beginDrag = (event: React.PointerEvent) => { drag.current = { x: event.clientX, y: event.clientY, lastY: event.clientY, pointerType: event.pointerType, baseX: look.x, baseY: look.y, captured: false }; };
   const moveDrag = (event: React.PointerEvent) => {
     if (!drag.current) return;
+    const moved = Math.hypot(event.clientX - drag.current.x, event.clientY - drag.current.y);
+    if (moved > 4 && !drag.current.captured) {
+      event.currentTarget.setPointerCapture(event.pointerId);
+      drag.current.captured = true;
+    }
     if (drag.current.pointerType === 'touch') {
       const delta = drag.current.lastY - event.clientY;
       drag.current.lastY = event.clientY;
@@ -312,7 +317,7 @@ export default function Home() {
     }
     setLook({ x: clamp(drag.current.baseX + (event.clientX - drag.current.x) / 10, -13, 13), y: clamp(drag.current.baseY - (event.clientY - drag.current.y) / 13, -7, 7) });
   };
-  const endDrag = (event: React.PointerEvent) => { if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); drag.current = null; };
+  const endDrag = (event: React.PointerEvent) => { if (drag.current?.captured && event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); drag.current = null; };
   const walk = (event: React.WheelEvent) => { event.preventDefault(); setProgress((value) => clamp(value + clamp(event.deltaY, -180, 180) * 0.00024)); };
   const showRelative = (direction: number) => { if (!detail) return; const index = works.findIndex((work) => work.id === detail.id); setDetail(works[(index + direction + works.length) % works.length]); };
   const enterExhibition = () => {
