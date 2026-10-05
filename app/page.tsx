@@ -198,8 +198,10 @@ function ArtPanel({ work, active, onSelect }: { work: Work; active: boolean; onS
 
   useFrame(({ camera }, delta) => {
     if (!work.cover || !group.current) return;
-    const target = THREE.MathUtils.clamp((camera.position.z - work.position[2] + 0.62) / 1.52, 0, 1);
-    fade.current = THREE.MathUtils.damp(fade.current, target, 8, delta);
+    // Start dissolving just before the portrait becomes larger than the view,
+    // then clear it before the camera reaches the threshold.
+    const target = THREE.MathUtils.clamp((camera.position.z - work.position[2] - 1.5) / 1.7, 0, 1);
+    fade.current = THREE.MathUtils.damp(fade.current, target, 12, delta);
     group.current.visible = fade.current > 0.012;
     group.current.traverse((child) => {
       if (!(child instanceof THREE.Mesh || child instanceof THREE.LineSegments)) return;
