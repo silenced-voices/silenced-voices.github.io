@@ -23,6 +23,17 @@ type Work = {
 
 type Chapter = { id: number; number: string; lastWorkZ: number };
 
+export type ProfileMetrics = {
+  fps: number;
+  averageFrameMs: number;
+  worstFrameMs: number;
+  slowFrames: number;
+  activePanels: number;
+  drawCalls: number;
+  triangles: number;
+  textures: number;
+};
+
 type SceneProps = {
   progress: number;
   look: { x: number; y: number };
@@ -33,6 +44,8 @@ type SceneProps = {
   portalPositions: number[];
   pathStartZ: number;
   pathEndZ: number;
+  profiling?: boolean;
+  onProfile?: (metrics: ProfileMetrics) => void;
 };
 
 export function preloadArtwork(images: string[]) {
@@ -196,7 +209,38 @@ function CameraRig({ progress, look, portalPositions, pathStartZ, pathEndZ }: Pi
   return null;
 }
 
-export default function ExhibitionScene({ progress, look, activeWork, onSelect, works, chapters, portalPositions, pathStartZ, pathEndZ }: SceneProps) {
+function SceneProfiler({ enabled, activePanels, onProfile }: { enabled: boolean; activePanels: number; onProfile?: (metrics: ProfileMetrics) => void }) {
+  const sample = useRef({ startedAt: 0, lastReportAt: 0, frames: 0, totalFrameMs: 0, worstFrameMs: 0, slowFrames: 0 });
+
+  useFrame(({ gl }, delta) => {
+    if (!enabled) return;
+    const now = performance.now();
+    if (!sample.current.startedAt) sample.current.startedAt = now;
+    const frameMs = Math.min(delta * 1000, 1000);
+    sample.current.frames += 1;
+    sample.current.totalFrameMs += frameMs;
+    sample.current.worstFrameMs = Math.max(sample.current.worstFrameMs, frameMs);
+    if (frameMs > 25) sample.current.slowFrames += 1;
+    if (now - sample.current.lastReportAt < 650) return;
+
+    const elapsed = Math.max(1, now - sample.current.startedAt);
+    onProfile?.({
+      fps: Math.round(sample.current.frames * 1000 / elapsed),
+      averageFrameMs: Math.round(sample.current.totalFrameMs / sample.current.frames),
+      worstFrameMs: Math.round(sample.current.worstFrameMs),
+      slowFrames: sample.current.slowFrames,
+      activePanels,
+      drawCalls: gl.info.render.calls,
+      triangles: gl.info.render.triangles,
+      textures: gl.info.memory.textures,
+    });
+    sample.current.lastReportAt = now;
+  });
+
+  return null;
+}
+
+export default function ExhibitionScene({ progress, look, activeWork, onSelect, works, chapters, portalPositions, pathStartZ, pathEndZ, profiling = false, onProfile }: SceneProps) {
   const cameraZ = THREE.MathUtils.lerp(pathStartZ, pathEndZ, progress);
   const [compact] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 820px)').matches);
   const nearbyWorks = works.filter((work) => Math.abs(work.position[2] - cameraZ) < 42);
@@ -206,5 +250,6 @@ export default function ExhibitionScene({ progress, look, activeWork, onSelect, 
     <Architecture chapters={chapters} portalPositions={portalPositions} pathStartZ={pathStartZ} pathEndZ={pathEndZ} compact={compact} />
     {nearbyWorks.map((work) => <Suspense key={work.id} fallback={<PanelPlaceholder work={work} active={work.id === activeWork} />}><ArtPanel work={work} active={work.id === activeWork} onSelect={onSelect} /></Suspense>)}
     <CameraRig progress={progress} look={look} portalPositions={portalPositions} pathStartZ={pathStartZ} pathEndZ={pathEndZ} />
+    <SceneProfiler enabled={profiling} activePanels={nearbyWorks.length} onProfile={onProfile} />
   </Canvas>;
 }

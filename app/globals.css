@@ -122,6 +122,9 @@ button:focus-visible{outline:2px solid #f4eee0;outline-offset:4px}
 .utility-nav button{display:flex;gap:.55rem;align-items:center;border:0;background:none;color:#aaa59b;text-transform:uppercase;letter-spacing:.15em;font-size:.56rem;cursor:pointer;text-shadow:0 1px 10px #000}
 .utility-nav svg{width:14px}
 
+.performance-profile{position:absolute;z-index:85;right:2.4vw;bottom:3.1vh;width:245px;padding:.8rem .9rem;border:1px solid #8d8678;background:#080808e8;color:#d8d3c8;font:.52rem/1.55 ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase;pointer-events:none;box-shadow:0 10px 35px #000;backdrop-filter:blur(12px)}
+.performance-profile>span{display:block;margin-bottom:.45rem;color:#9f988b;font-size:.44rem;letter-spacing:.15em}.performance-profile b{display:block;margin-bottom:.3rem;color:#f1ebdd;font-size:1.1rem;letter-spacing:.04em}.performance-profile p{margin:.2rem 0;color:#aaa398}
+
 .control-card{position:absolute;right:2.4vw;bottom:122px;z-index:24;width:290px;padding:1.05rem;border:1px solid #555149;background:#0b0b0ae6;box-shadow:0 12px 40px #000;font-family:ui-monospace,monospace;text-transform:uppercase;letter-spacing:.1em;backdrop-filter:blur(15px)}
 .control-card button{position:absolute;right:.5rem;top:.5rem;border:0;background:none;color:#aaa;cursor:pointer}
 .control-card svg{width:14px}
@@ -167,6 +170,7 @@ button:focus-visible{outline:2px solid #f4eee0;outline-offset:4px}
   .walk-instruction{bottom:4.5rem;font-size:.48rem;letter-spacing:.12em}
   .walk-progress{left:20%;right:20%;bottom:3.65rem}
   .utility-nav{right:1rem;bottom:1rem}.utility-nav button:nth-child(2){display:none}
+  .performance-profile{left:1rem;right:1rem;bottom:6.6rem;width:auto}
   .nav-arrow{top:auto;bottom:7.2rem;height:46px;width:38px}.nav-arrow.prev{left:.75rem}.nav-arrow.next{right:.75rem}
   .control-card{left:1rem;right:1rem;bottom:6.6rem;width:auto}
   .detail-backdrop{display:block;overflow:auto;padding:5rem 1.1rem 3rem}
