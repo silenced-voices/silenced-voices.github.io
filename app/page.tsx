@@ -395,6 +395,7 @@ export default function Home() {
   const animationFrame = useRef<number | null>(null);
   const lastWalkTime = useRef<number | null>(null);
   const lastVisualUpdate = useRef(0);
+  const decodedArtwork = useRef<HTMLImageElement[]>([]);
 
   const cameraZ = THREE.MathUtils.lerp(PATH_START_Z, PATH_END_Z, progress);
   const currentRoom = chapterForZ(cameraZ);
@@ -475,23 +476,25 @@ export default function Home() {
     setOpening(true);
     const startedAt = performance.now();
     const allArtwork = works.map((work) => work.image);
-    const initialArtwork = works.filter((work) => Math.abs(work.position[2] - PATH_START_Z) < 42).map((work) => work.image);
-    const warmImage = (source: string, decode = false) => new Promise<void>((resolve) => {
+    const warmImage = (source: string) => new Promise<HTMLImageElement | null>((resolve) => {
       const image = new Image();
       image.decoding = 'async';
       image.onload = () => {
-        if (!decode || typeof image.decode !== 'function') { resolve(); return; }
-        image.decode().catch(() => undefined).finally(resolve);
+        const retain = () => {
+          THREE.Cache.add(source, image);
+          resolve(image);
+        };
+        if (typeof image.decode !== 'function') { retain(); return; }
+        image.decode().catch(() => undefined).finally(retain);
       };
-      image.onerror = () => resolve();
+      image.onerror = () => resolve(null);
       image.src = source;
     });
 
-    const preparation = Promise.all([
-      import('./exhibition-scene').then((scene) => scene.preloadArtwork(initialArtwork)).catch(() => undefined),
-      ...allArtwork.map((source) => warmImage(source, initialArtwork.includes(source))),
-    ]);
-    await preparation;
+    THREE.Cache.enabled = true;
+    const decoded = await Promise.all(allArtwork.map(warmImage));
+    decodedArtwork.current = decoded.filter((image): image is HTMLImageElement => image !== null);
+    await import('./exhibition-scene').then((scene) => scene.preloadArtwork(allArtwork)).catch(() => undefined);
     // The gallery canvas mounts behind the entry screen while the image cache is
     // filled. Keeping the screen up a little longer also gives WebGL a chance to
     // compile its first shaders and upload the starting room before interaction.
