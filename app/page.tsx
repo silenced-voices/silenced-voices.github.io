@@ -185,6 +185,13 @@ const works: Work[] = chapters.flatMap((chapter) => chapter.bays.flatMap((bay, b
   };
 })));
 
+// A caption belongs to a camera viewpoint (a bay), rather than an individual
+// board. Paired boards intentionally share one editorial moment.
+const captionStops = chapters.flatMap((chapter) => chapter.bays.map((bay, bayIndex) => ({
+  z: chapter.firstWorkZ - bayIndex * BAY_SPACING,
+  workId: `${bay[0].page}-${bay[0].half}`,
+})));
+
 const PATH_START_Z = 8.2;
 const PATH_END_Z = works[works.length - 1].position[2] - 4.2;
 const PATH_LENGTH = PATH_START_Z - PATH_END_Z;
@@ -404,14 +411,11 @@ export default function Home() {
   const distanceBeforePortal = cameraZ - portalPositions[nearestPortalIndex];
   const transitioning = distanceBeforePortal > 0.7 && distanceBeforePortal < PORTAL_GAP - 0.2;
   const enteringChapter = chapters[Math.min(nearestPortalIndex + 1, chapters.length - 1)];
-  // Once the camera has walked beyond a chapter cover, it is scenery only.
-  // Keeping it out of the active selection prevents keyboard/default selection
-  // from reopening a cover while the visitor is engaging with the wall behind it.
-  const selectableWorks = works.filter((work) => !work.cover || cameraZ - work.position[2] < 1.2);
-  // Let the editorial caption lead the camera slightly so it changes while its
-  // corresponding board is still entering the visitor's view.
-  const captionFocusZ = cameraZ - 3.2;
-  const nearest = selectableWorks.reduce((best, work) => Math.abs(work.position[2] - captionFocusZ) < Math.abs(best.position[2] - captionFocusZ) ? work : best, selectableWorks[0] ?? works[0]);
+  // Advance captions into the incoming viewpoint, while keeping every cover
+  // and paired board in the authored sequence.
+  const captionFocusZ = cameraZ - 5.1;
+  const captionStop = captionStops.reduce((best, stop) => Math.abs(stop.z - captionFocusZ) < Math.abs(best.z - captionFocusZ) ? stop : best, captionStops[0]);
+  const nearest = works.find((work) => work.id === captionStop.workId) ?? works[0];
 
   const walkTo = (next: number) => {
     targetProgressRef.current = clamp(next);
