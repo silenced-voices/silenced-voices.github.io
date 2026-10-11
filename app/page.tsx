@@ -508,7 +508,6 @@ export default function Home() {
       <section className="opening-scene">
         <div className="opening-objects" aria-hidden="true"><span className="object-orbit orbit-one" /><span className="object-orbit orbit-two" /><span className="object-tag">ARCHIVE / 2026</span><span className="object-rule" /></div>
         <div className="opening-copy">
-          <p className="eyebrow">Chapter 00 · A personal beginning</p>
           <h1>Silenced<br /><i>Voices</i></h1>
           <p className="threshold-intro">An exhibition about aphasia, family care, and the right to be understood. Begin with one grandmother whose thoughts remained present when language became difficult to reach.</p>
           <div className="opening-actions">
@@ -520,7 +519,6 @@ export default function Home() {
           <span className="opening-rail rail-left" /><span className="opening-rail rail-right" />
           <span className="opening-frame"><img src="/boards/page-01-full.jpg" alt="Silenced Voices exhibition cover" /></span>
           <span className="opening-shadow" />
-          <span className="opening-index">00 / Threshold</span>
         </button>
       </section>
       <footer className="opening-footer"><span>Scroll to walk · drag to look · click a work to enter</span><span>Chapters 00–10 + Appendix</span></footer>
