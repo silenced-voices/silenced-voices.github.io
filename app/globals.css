@@ -98,8 +98,7 @@ button:focus-visible{outline:2px solid #f4eee0;outline-offset:4px}
 .space-caption{position:absolute;left:2.4vw;top:132px;z-index:15;display:flex;gap:1rem;align-items:start;pointer-events:none;max-width:470px;text-shadow:0 2px 15px #000}
 .space-caption>span{font:.66rem ui-monospace,monospace;color:#9e988d;padding-top:.35rem}
 .space-caption>div{padding:.15rem 0 .2rem 1rem;border-left:1px solid #aaa39766;animation:caption-in .45s ease both}
-.space-caption .caption-kicker-wrap{display:inline-block;margin-bottom:.55rem;padding:.42rem .62rem;background:#0808088c;box-shadow:0 8px 28px #00000070;backdrop-filter:blur(16px)}
-.space-caption .caption-kicker{margin:0;text-transform:uppercase;letter-spacing:.18em;color:#a39e94;font-size:.55rem}
+.space-caption .caption-kicker{margin:0 0 .55rem;text-transform:uppercase;letter-spacing:.18em;color:#a39e94;font-size:.55rem}
 .space-caption h1{margin:0;font:400 clamp(1.45rem,2.7vw,2.8rem)/.95 Georgia,serif}
 .caption-support{max-width:430px;margin-top:.9rem;padding:.78rem .9rem .86rem;background:#0808089e;box-shadow:0 12px 34px #00000078;backdrop-filter:blur(16px)}
 .space-caption .space-summary{max-width:410px;margin:0;color:#d8d3c8;font:.74rem/1.58 Georgia,serif;letter-spacing:.01em}
