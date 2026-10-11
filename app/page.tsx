@@ -410,7 +410,7 @@ export default function Home() {
   const selectableWorks = works.filter((work) => !work.cover || cameraZ - work.position[2] < 1.2);
   // Let the editorial caption lead the camera slightly so it changes while its
   // corresponding board is still entering the visitor's view.
-  const captionFocusZ = cameraZ - 1.5;
+  const captionFocusZ = cameraZ - 3.2;
   const nearest = selectableWorks.reduce((best, work) => Math.abs(work.position[2] - captionFocusZ) < Math.abs(best.position[2] - captionFocusZ) ? work : best, selectableWorks[0] ?? works[0]);
 
   const walkTo = (next: number) => {
