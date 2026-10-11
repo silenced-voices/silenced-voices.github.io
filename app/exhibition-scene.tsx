@@ -23,34 +23,6 @@ type Work = {
 
 type Chapter = { id: number; number: string; lastWorkZ: number };
 
-export type ProfileMetrics = {
-  fps: number;
-  averageFrameMs: number;
-  worstFrameMs: number;
-  slowFrames: number;
-  activePanels: number;
-  drawCalls: number;
-  triangles: number;
-  textures: number;
-  cameraCpuMsPeak: number;
-  decorCpuMsPeak: number;
-  coverCpuMsPeak: number;
-};
-
-type PhaseTimings = { camera: number; decor: number; cover: number };
-const emptyTimings = (): PhaseTimings => ({ camera: 0, decor: 0, cover: 0 });
-const frameTimings = { enabled: false, current: emptyTimings() };
-
-function beginTimingFrame() {
-  const previous = frameTimings.current;
-  frameTimings.current = emptyTimings();
-  return previous;
-}
-
-function measurePhase(phase: keyof PhaseTimings, startedAt: number) {
-  if (frameTimings.enabled) frameTimings.current[phase] += performance.now() - startedAt;
-}
-
 type SceneProps = {
   progress: number;
   look: { x: number; y: number };
@@ -61,8 +33,6 @@ type SceneProps = {
   portalPositions: number[];
   pathStartZ: number;
   pathEndZ: number;
-  profiling?: boolean;
-  onProfile?: (metrics: ProfileMetrics) => void;
 };
 
 export function preloadArtwork(images: string[]) {
@@ -93,7 +63,6 @@ function ArtPanel({ work, active, onSelect }: { work: Work; active: boolean; onS
 
   useFrame(({ camera }, delta) => {
     if (!work.cover || !group.current) return;
-    const startedAt = frameTimings.enabled ? performance.now() : 0;
     const target = THREE.MathUtils.clamp((camera.position.z - work.position[2] - 2.0) / 1.15, 0, 1);
     fade.current = THREE.MathUtils.damp(fade.current, target, 18, delta);
     group.current.visible = fade.current > 0.012;
@@ -112,7 +81,6 @@ function ArtPanel({ work, active, onSelect }: { work: Work; active: boolean; onS
       });
     });
     if (coverLight.current) coverLight.current.intensity = (active || hovered ? 3.2 : 1.15) * fade.current;
-    measurePhase('cover', startedAt);
   });
 
   const select = (event: ThreeEvent<MouseEvent>) => {
@@ -178,10 +146,8 @@ function RoomDecor({ chapter }: { chapter: Chapter }) {
   const accent = accents[chapter.id % accents.length];
   useFrame((_, delta) => {
     if (!sculpture.current) return;
-    const startedAt = frameTimings.enabled ? performance.now() : 0;
     sculpture.current.rotation.y += delta * (chapter.id % 2 === 0 ? 0.12 : -0.12);
     sculpture.current.rotation.z += delta * 0.025;
-    measurePhase('decor', startedAt);
   });
   return <group>
     <group position={[0, 0, z]}>
@@ -216,7 +182,6 @@ function Architecture({ chapters, portalPositions, pathStartZ, pathEndZ, compact
 
 function CameraRig({ progress, look, portalPositions, pathStartZ, pathEndZ }: Pick<SceneProps, 'progress' | 'look' | 'portalPositions' | 'pathStartZ' | 'pathEndZ'>) {
   useFrame(({ camera }, delta) => {
-    const startedAt = frameTimings.enabled ? performance.now() : 0;
     const targetZ = THREE.MathUtils.lerp(pathStartZ, pathEndZ, progress);
     const nearestPortal = Math.min(...portalPositions.map((z) => Math.abs(targetZ - z)));
     const doorway = Math.exp(-Math.pow(nearestPortal / 2.4, 2));
@@ -227,58 +192,11 @@ function CameraRig({ progress, look, portalPositions, pathStartZ, pathEndZ }: Pi
     camera.lookAt(camera.position.x + Math.sin(yaw) * 12, camera.position.y + Math.sin(pitch) * 10, camera.position.z - Math.cos(yaw) * 12);
     const perspectiveCamera = camera as THREE.PerspectiveCamera; const targetFov = 56 + doorway * 8;
     if (Math.abs(perspectiveCamera.fov - targetFov) > 0.02) { perspectiveCamera.fov = THREE.MathUtils.damp(perspectiveCamera.fov, targetFov, 5, delta); perspectiveCamera.updateProjectionMatrix(); }
-    measurePhase('camera', startedAt);
   });
   return null;
 }
 
-function SceneProfiler({ enabled, activePanels, onProfile }: { enabled: boolean; activePanels: number; onProfile?: (metrics: ProfileMetrics) => void }) {
-  const sample = useRef({ startedAt: 0, lastReportAt: 0, frames: 0, totalFrameMs: 0, worstFrameMs: 0, slowFrames: 0, cameraCpuMsPeak: 0, decorCpuMsPeak: 0, coverCpuMsPeak: 0 });
-
-  useEffect(() => {
-    if (!enabled) return;
-    frameTimings.enabled = true;
-    return () => {
-      frameTimings.enabled = false;
-    };
-  }, [enabled]);
-
-  useFrame(({ gl }, delta) => {
-    if (!enabled) return;
-    const priorTimings = beginTimingFrame();
-    const now = performance.now();
-    if (!sample.current.startedAt) sample.current.startedAt = now;
-    const frameMs = Math.min(delta * 1000, 1000);
-    sample.current.frames += 1;
-    sample.current.totalFrameMs += frameMs;
-    sample.current.worstFrameMs = Math.max(sample.current.worstFrameMs, frameMs);
-    if (frameMs > 25) sample.current.slowFrames += 1;
-    sample.current.cameraCpuMsPeak = Math.max(sample.current.cameraCpuMsPeak, priorTimings.camera);
-    sample.current.decorCpuMsPeak = Math.max(sample.current.decorCpuMsPeak, priorTimings.decor);
-    sample.current.coverCpuMsPeak = Math.max(sample.current.coverCpuMsPeak, priorTimings.cover);
-    if (now - sample.current.lastReportAt < 650) return;
-
-    const elapsed = Math.max(1, now - sample.current.startedAt);
-    onProfile?.({
-      fps: Math.round(sample.current.frames * 1000 / elapsed),
-      averageFrameMs: Math.round(sample.current.totalFrameMs / sample.current.frames),
-      worstFrameMs: Math.round(sample.current.worstFrameMs),
-      slowFrames: sample.current.slowFrames,
-      activePanels,
-      drawCalls: gl.info.render.calls,
-      triangles: gl.info.render.triangles,
-      textures: gl.info.memory.textures,
-      cameraCpuMsPeak: Math.round(sample.current.cameraCpuMsPeak),
-      decorCpuMsPeak: Math.round(sample.current.decorCpuMsPeak),
-      coverCpuMsPeak: Math.round(sample.current.coverCpuMsPeak),
-    });
-    sample.current.lastReportAt = now;
-  }, -1000);
-
-  return null;
-}
-
-export default function ExhibitionScene({ progress, look, activeWork, onSelect, works, chapters, portalPositions, pathStartZ, pathEndZ, profiling = false, onProfile }: SceneProps) {
+export default function ExhibitionScene({ progress, look, activeWork, onSelect, works, chapters, portalPositions, pathStartZ, pathEndZ }: SceneProps) {
   const cameraZ = THREE.MathUtils.lerp(pathStartZ, pathEndZ, progress);
   const [compact] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 820px)').matches);
   const nearbyWorks = works.filter((work) => Math.abs(work.position[2] - cameraZ) < 42);
@@ -288,6 +206,5 @@ export default function ExhibitionScene({ progress, look, activeWork, onSelect, 
     <Architecture chapters={chapters} portalPositions={portalPositions} pathStartZ={pathStartZ} pathEndZ={pathEndZ} compact={compact} />
     {nearbyWorks.map((work) => <Suspense key={work.id} fallback={<PanelPlaceholder work={work} active={work.id === activeWork} />}><ArtPanel work={work} active={work.id === activeWork} onSelect={onSelect} /></Suspense>)}
     <CameraRig progress={progress} look={look} portalPositions={portalPositions} pathStartZ={pathStartZ} pathEndZ={pathEndZ} />
-    <SceneProfiler enabled={profiling} activePanels={nearbyWorks.length} onProfile={onProfile} />
   </Canvas>;
 }

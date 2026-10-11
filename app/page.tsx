@@ -1,31 +1,10 @@
 'use client';
 
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, ThreeEvent, useFrame } from '@react-three/fiber';
 import { Edges, MeshReflectorMaterial, Sparkles, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
 import { ArrowLeft, ArrowRight, MousePointer2, X } from 'lucide-react';
-import type { ProfileMetrics } from './exhibition-scene';
-
-type LongTaskMetrics = { count: number; worstMs: number };
-type ResourceMetrics = { boards: number; bytes: number };
-type LongAnimationFrameMetrics = { durationMs: number; blockingMs: number; script: string; source: string };
-type LongAnimationFrameScript = { duration: number; functionName?: string; invoker?: string; sourceURL?: string };
-type LongAnimationFrameEntry = PerformanceEntry & {
-  blockingDuration?: number;
-  scripts?: LongAnimationFrameScript[];
-};
-
-declare global {
-  interface Window {
-    __silencedVoiceProfile?: {
-      scene: ProfileMetrics | null;
-      longTasks: LongTaskMetrics;
-      resources: ResourceMetrics;
-      animationFrames: LongAnimationFrameMetrics[];
-    };
-  }
-}
 
 type Chapter = {
   id: number;
@@ -407,67 +386,11 @@ export default function Home() {
   const [opening, setOpening] = useState(false);
   const [mobileNotice, setMobileNotice] = useState(false);
   const [look, setLook] = useState({ x: 0, y: 0 });
-  const [profiling] = useState(() => typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('profile') === '1');
-  const [profileMetrics, setProfileMetrics] = useState<ProfileMetrics | null>(null);
-  const [longTasks, setLongTasks] = useState<LongTaskMetrics>({ count: 0, worstMs: 0 });
-  const [profileResources, setProfileResources] = useState<ResourceMetrics>({ boards: 0, bytes: 0 });
-  const [longAnimationFrames, setLongAnimationFrames] = useState<LongAnimationFrameMetrics[]>([]);
-  const [profileCopied, setProfileCopied] = useState(false);
   const drag = useRef<{ x: number; y: number; lastY: number; pointerType: string; baseX: number; baseY: number; captured: boolean } | null>(null);
   const progressRef = useRef(0);
   const targetProgressRef = useRef(0);
   const animationFrame = useRef<number | null>(null);
   const lastWalkTime = useRef<number | null>(null);
-  const reportProfile = useCallback((metrics: ProfileMetrics) => setProfileMetrics(metrics), []);
-
-  useEffect(() => {
-    if (!profiling || typeof PerformanceObserver === 'undefined') return;
-    const boardResources = new Set<string>();
-    const observe = (type: string, callback: PerformanceObserverCallback) => {
-      try {
-        const observer = new PerformanceObserver(callback);
-        observer.observe({ type, buffered: true } as PerformanceObserverInit);
-        return observer;
-      } catch { return null; }
-    };
-    const longTaskObserver = observe('longtask', (list) => {
-      list.getEntries().forEach((entry) => setLongTasks((current) => ({ count: current.count + 1, worstMs: Math.max(current.worstMs, Math.round(entry.duration)) })));
-    });
-    const resourceObserver = observe('resource', (list) => {
-      list.getEntries().forEach((entry) => {
-        const resource = entry as PerformanceResourceTiming;
-        if (!resource.name.includes('/boards/') || boardResources.has(resource.name)) return;
-        boardResources.add(resource.name);
-        setProfileResources((current) => ({ boards: current.boards + 1, bytes: current.bytes + resource.transferSize }));
-      });
-    });
-    const animationFrameObserver = observe('long-animation-frame', (list) => {
-      list.getEntries().forEach((entry) => {
-        const frame = entry as LongAnimationFrameEntry;
-        const slowestScript = (frame.scripts ?? []).reduce<LongAnimationFrameScript | undefined>((slowest, script) => script.duration > (slowest?.duration ?? 0) ? script : slowest, undefined);
-        const script = slowestScript?.functionName || slowestScript?.invoker || 'browser rendering / image decode';
-        const source = slowestScript?.sourceURL ? slowestScript.sourceURL.split('/').pop() || slowestScript.sourceURL : 'browser-internal';
-        const result = { durationMs: Math.round(frame.duration), blockingMs: Math.round(frame.blockingDuration ?? 0), script, source };
-        setLongAnimationFrames((current) => [...current, result].sort((a, b) => b.durationMs - a.durationMs).slice(0, 5));
-      });
-    });
-    return () => { longTaskObserver?.disconnect(); resourceObserver?.disconnect(); animationFrameObserver?.disconnect(); };
-  }, [profiling]);
-
-  useEffect(() => {
-    if (!profiling) return;
-    window.__silencedVoiceProfile = { scene: profileMetrics, longTasks, resources: profileResources, animationFrames: longAnimationFrames };
-    sessionStorage.setItem('silenced-voice-profile', JSON.stringify(window.__silencedVoiceProfile));
-  }, [profiling, profileMetrics, longTasks, profileResources, longAnimationFrames]);
-
-  const copyProfile = async () => {
-    const report = window.__silencedVoiceProfile;
-    if (!report) return;
-    try {
-      await navigator.clipboard.writeText(JSON.stringify({ capturedAt: new Date().toISOString(), ...report }, null, 2));
-      setProfileCopied(true);
-    } catch { setProfileCopied(false); }
-  };
 
   const cameraZ = THREE.MathUtils.lerp(PATH_START_Z, PATH_END_Z, progress);
   const currentRoom = chapterForZ(cameraZ);
@@ -600,9 +523,8 @@ export default function Home() {
     <>
       {landing}
       {(opening || mode === 'space') && <main key="gallery" className={`space-mode room-${currentRoom} ${opening ? 'is-prewarming' : ''} ${transitioning ? 'is-transitioning' : ''}`}>
-      <section className="room-viewport" aria-label="Interactive 3D exhibition. Scroll to walk, drag to look, and click a mounted work to view it full screen." onWheel={walk} onPointerDown={beginDrag} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag}><Suspense fallback={<div className="scene-loader" aria-label="Loading exhibition" />}><LazyExhibitionScene progress={progress} look={look} activeWork={nearest.id} onSelect={setDetail} works={works} chapters={chapters} portalPositions={portalPositions} pathStartZ={PATH_START_Z} pathEndZ={PATH_END_Z} profiling={profiling} onProfile={reportProfile} /></Suspense></section>
+      <section className="room-viewport" aria-label="Interactive 3D exhibition. Scroll to walk, drag to look, and click a mounted work to view it full screen." onWheel={walk} onPointerDown={beginDrag} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag}><Suspense fallback={<div className="scene-loader" aria-label="Loading exhibition" />}><LazyExhibitionScene progress={progress} look={look} activeWork={nearest.id} onSelect={setDetail} works={works} chapters={chapters} portalPositions={portalPositions} pathStartZ={PATH_START_Z} pathEndZ={PATH_END_Z} /></Suspense></section>
       {opening && <div className="gallery-prewarm" role="status" aria-live="polite"><span /><p>Preparing the gallery</p><small>Loading rooms for a smoother first walk</small></div>}
-      {profiling && <aside className="performance-profile" aria-live="polite"><span>Temporary performance profile</span><b>{profileMetrics ? `${profileMetrics.fps} FPS` : 'Starting canvas…'}</b><p>{profileMetrics ? `${profileMetrics.averageFrameMs}ms average · ${profileMetrics.worstFrameMs}ms peak · ${profileMetrics.slowFrames} slow frames` : 'Collecting frame timing'}</p><p>{profileMetrics ? `${profileMetrics.activePanels} panels · ${profileMetrics.textures} GPU textures` : 'Waiting for GPU data'}</p><p>{profileMetrics ? `CPU peak: camera ${profileMetrics.cameraCpuMsPeak}ms · decor ${profileMetrics.decorCpuMsPeak}ms · cover ${profileMetrics.coverCpuMsPeak}ms` : 'Measuring scene phases'}</p><p>{longAnimationFrames[0] ? `Worst visual frame: ${longAnimationFrames[0].durationMs}ms · ${longAnimationFrames[0].script}` : `${longTasks.count} main-thread long tasks · worst ${longTasks.worstMs}ms`}</p><p>{profileResources.boards} board files · {(profileResources.bytes / 1024 / 1024).toFixed(1)}MB transferred</p><button onClick={copyProfile}>{profileCopied ? 'Report copied' : 'Copy report'}</button></aside>}
       <div className="gallery-atmosphere" aria-hidden="true"><span className="atmosphere-orbit" /><span className="atmosphere-beam beam-one" /><span className="atmosphere-beam beam-two" /></div>
       <div className="gallery-readout" aria-hidden="true"><span>EXHIBITION INDEX</span><b>{String(currentRoom + 1).padStart(2, '0')} / {String(chapters.length).padStart(2, '0')}</b><i>Spatial studies · listening architecture</i></div>
       <header className="space-header"><button className="wordmark" onClick={() => setMode('ask')}>Silenced <i>Voices</i></button><span>Room {currentChapter.number} / {currentChapter.title}</span></header>
