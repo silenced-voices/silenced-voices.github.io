@@ -1,8 +1,6 @@
 'use client';
 
-import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
-import { Canvas, ThreeEvent, useFrame } from '@react-three/fiber';
-import { Edges, MeshReflectorMaterial, Sparkles, useTexture } from '@react-three/drei';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { ArrowLeft, ArrowRight, MousePointer2, X } from 'lucide-react';
 
@@ -201,7 +199,12 @@ function chapterForZ(z: number) {
   return room;
 }
 
-function ArtPanel({ work, active, onSelect }: { work: Work; active: boolean; onSelect: (work: Work) => void }) {
+/*
+ * The scene below predates the lazy-loaded gallery module. Keeping it as a
+ * comment for this release prevents an unused second Three.js scene from
+ * becoming part of the entry bundle while preserving its history temporarily.
+ */
+/* function ArtPanel({ work, active, onSelect }: { work: Work; active: boolean; onSelect: (work: Work) => void }) {
   const texture = useTexture(work.image);
   const [hovered, setHovered] = useState(false);
   const group = useRef<THREE.Group>(null);
@@ -376,7 +379,7 @@ function ExhibitionScene({ progress, look, activeWork, onSelect }: { progress: n
       <CameraRig progress={progress} look={look} />
     </Canvas>
   );
-}
+} */
 
 export default function Home() {
   const [mode, setMode] = useState<'ask' | 'space'>('ask');
@@ -385,12 +388,13 @@ export default function Home() {
   const [help, setHelp] = useState(true);
   const [opening, setOpening] = useState(false);
   const [mobileNotice, setMobileNotice] = useState(false);
-  const [look, setLook] = useState({ x: 0, y: 0 });
   const drag = useRef<{ x: number; y: number; lastY: number; pointerType: string; baseX: number; baseY: number; captured: boolean } | null>(null);
   const progressRef = useRef(0);
   const targetProgressRef = useRef(0);
+  const lookRef = useRef({ x: 0, y: 0 });
   const animationFrame = useRef<number | null>(null);
   const lastWalkTime = useRef<number | null>(null);
+  const lastVisualUpdate = useRef(0);
 
   const cameraZ = THREE.MathUtils.lerp(PATH_START_Z, PATH_END_Z, progress);
   const currentRoom = chapterForZ(cameraZ);
@@ -416,7 +420,10 @@ export default function Home() {
       const distance = target - progressRef.current;
       const nextProgress = Math.abs(distance) < 0.0002 ? target : progressRef.current + Math.sign(distance) * Math.min(Math.abs(distance), elapsed * 0.3);
       progressRef.current = nextProgress;
-      setProgress(nextProgress);
+      if (time - lastVisualUpdate.current > 80 || Math.abs(target - nextProgress) <= 0.0002) {
+        lastVisualUpdate.current = time;
+        setProgress(nextProgress);
+      }
       if (Math.abs(target - nextProgress) > 0.0002) {
         animationFrame.current = window.requestAnimationFrame(advance);
       } else {
@@ -442,7 +449,7 @@ export default function Home() {
     return () => window.removeEventListener('keydown', onKey);
   }, [detail, mode, nearest]);
 
-  const beginDrag = (event: React.PointerEvent) => { drag.current = { x: event.clientX, y: event.clientY, lastY: event.clientY, pointerType: event.pointerType, baseX: look.x, baseY: look.y, captured: false }; };
+  const beginDrag = (event: React.PointerEvent) => { drag.current = { x: event.clientX, y: event.clientY, lastY: event.clientY, pointerType: event.pointerType, baseX: lookRef.current.x, baseY: lookRef.current.y, captured: false }; };
   const moveDrag = (event: React.PointerEvent) => {
     if (!drag.current) return;
     const moved = Math.hypot(event.clientX - drag.current.x, event.clientY - drag.current.y);
@@ -454,10 +461,10 @@ export default function Home() {
       const delta = drag.current.lastY - event.clientY;
       drag.current.lastY = event.clientY;
       walkTo(targetProgressRef.current + delta * 0.00026);
-      setLook((value) => ({ ...value, x: clamp(drag.current!.baseX + (event.clientX - drag.current!.x) / 8, -12, 12) }));
+      lookRef.current = { ...lookRef.current, x: clamp(drag.current!.baseX + (event.clientX - drag.current!.x) / 8, -12, 12) };
       return;
     }
-    setLook({ x: clamp(drag.current.baseX + (event.clientX - drag.current.x) / 10, -13, 13), y: clamp(drag.current.baseY - (event.clientY - drag.current.y) / 13, -7, 7) });
+    lookRef.current = { x: clamp(drag.current.baseX + (event.clientX - drag.current.x) / 10, -13, 13), y: clamp(drag.current.baseY - (event.clientY - drag.current.y) / 13, -7, 7) };
   };
   const endDrag = (event: React.PointerEvent) => { if (drag.current?.captured && event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); drag.current = null; };
   const walk = (event: React.WheelEvent) => { event.preventDefault(); walkTo(targetProgressRef.current + clamp(event.deltaY, -140, 140) * 0.000085); };
@@ -523,7 +530,7 @@ export default function Home() {
     <>
       {landing}
       {(opening || mode === 'space') && <main key="gallery" className={`space-mode room-${currentRoom} ${opening ? 'is-prewarming' : ''} ${transitioning ? 'is-transitioning' : ''}`}>
-      <section className="room-viewport" aria-label="Interactive 3D exhibition. Scroll to walk, drag to look, and click a mounted work to view it full screen." onWheel={walk} onPointerDown={beginDrag} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag}><Suspense fallback={<div className="scene-loader" aria-label="Loading exhibition" />}><LazyExhibitionScene progress={progress} look={look} activeWork={nearest.id} onSelect={setDetail} works={works} chapters={chapters} portalPositions={portalPositions} pathStartZ={PATH_START_Z} pathEndZ={PATH_END_Z} /></Suspense></section>
+      <section className="room-viewport" aria-label="Interactive 3D exhibition. Scroll to walk, drag to look, and click a mounted work to view it full screen." onWheel={walk} onPointerDown={beginDrag} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag}><Suspense fallback={<div className="scene-loader" aria-label="Loading exhibition" />}><LazyExhibitionScene progressRef={progressRef} lookRef={lookRef} activeWork={nearest.id} onSelect={setDetail} works={works} chapters={chapters} portalPositions={portalPositions} pathStartZ={PATH_START_Z} pathEndZ={PATH_END_Z} /></Suspense></section>
       {opening && <div className="gallery-prewarm" role="status" aria-live="polite"><span /><p>Preparing the gallery</p><small>Loading rooms for a smoother first walk</small></div>}
       <div className="gallery-atmosphere" aria-hidden="true"><span className="atmosphere-orbit" /><span className="atmosphere-beam beam-one" /><span className="atmosphere-beam beam-two" /></div>
       <div className="gallery-readout" aria-hidden="true"><span>EXHIBITION INDEX</span><b>{String(currentRoom + 1).padStart(2, '0')} / {String(chapters.length).padStart(2, '0')}</b><i>Spatial studies · listening architecture</i></div>
