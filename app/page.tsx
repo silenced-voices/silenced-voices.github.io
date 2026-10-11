@@ -186,8 +186,7 @@ const works: Work[] = chapters.flatMap((chapter) => chapter.bays.flatMap((bay, b
 })));
 
 const PATH_START_Z = 8.2;
-// End at the composed appendix view rather than walking past the final mounted work.
-const PATH_END_Z = chapters[chapters.length - 1].firstWorkZ + 4.1;
+const PATH_END_Z = works[works.length - 1].position[2] - 4.2;
 const PATH_LENGTH = PATH_START_Z - PATH_END_Z;
 const portalPositions = chapters.slice(0, -1).map((chapter) => chapter.portalZ as number);
 const clamp = (value: number, min = 0, max = 1) => Math.max(min, Math.min(max, value));
