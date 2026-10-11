@@ -408,7 +408,10 @@ export default function Home() {
   // Keeping it out of the active selection prevents keyboard/default selection
   // from reopening a cover while the visitor is engaging with the wall behind it.
   const selectableWorks = works.filter((work) => !work.cover || cameraZ - work.position[2] < 1.2);
-  const nearest = selectableWorks.reduce((best, work) => Math.abs(work.position[2] - cameraZ) < Math.abs(best.position[2] - cameraZ) ? work : best, selectableWorks[0] ?? works[0]);
+  // Let the editorial caption lead the camera slightly so it changes while its
+  // corresponding board is still entering the visitor's view.
+  const captionFocusZ = cameraZ - 1.5;
+  const nearest = selectableWorks.reduce((best, work) => Math.abs(work.position[2] - captionFocusZ) < Math.abs(best.position[2] - captionFocusZ) ? work : best, selectableWorks[0] ?? works[0]);
 
   const walkTo = (next: number) => {
     targetProgressRef.current = clamp(next);
