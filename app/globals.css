@@ -124,6 +124,7 @@ button:focus-visible{outline:2px solid #f4eee0;outline-offset:4px}
 
 .performance-profile{position:absolute;z-index:85;right:2.4vw;bottom:3.1vh;width:245px;padding:.8rem .9rem;border:1px solid #8d8678;background:#080808e8;color:#d8d3c8;font:.52rem/1.55 ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase;pointer-events:none;box-shadow:0 10px 35px #000;backdrop-filter:blur(12px)}
 .performance-profile>span{display:block;margin-bottom:.45rem;color:#9f988b;font-size:.44rem;letter-spacing:.15em}.performance-profile b{display:block;margin-bottom:.3rem;color:#f1ebdd;font-size:1.1rem;letter-spacing:.04em}.performance-profile p{margin:.2rem 0;color:#aaa398}
+.performance-profile button{width:100%;margin-top:.55rem;padding:.46rem;border:1px solid #777168;background:#151512;color:#e6dfd1;cursor:pointer;font:inherit;letter-spacing:.12em;text-transform:uppercase;pointer-events:auto}.performance-profile button:hover{background:#e6dfd1;color:#151512}
 
 .control-card{position:absolute;right:2.4vw;bottom:122px;z-index:24;width:290px;padding:1.05rem;border:1px solid #555149;background:#0b0b0ae6;box-shadow:0 12px 40px #000;font-family:ui-monospace,monospace;text-transform:uppercase;letter-spacing:.1em;backdrop-filter:blur(15px)}
 .control-card button{position:absolute;right:.5rem;top:.5rem;border:0;background:none;color:#aaa;cursor:pointer}

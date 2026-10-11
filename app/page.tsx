@@ -404,6 +404,7 @@ export default function Home() {
   const [profileMetrics, setProfileMetrics] = useState<ProfileMetrics | null>(null);
   const [longTasks, setLongTasks] = useState<LongTaskMetrics>({ count: 0, worstMs: 0 });
   const [profileResources, setProfileResources] = useState<ResourceMetrics>({ boards: 0, bytes: 0 });
+  const [profileCopied, setProfileCopied] = useState(false);
   const drag = useRef<{ x: number; y: number; lastY: number; pointerType: string; baseX: number; baseY: number; captured: boolean } | null>(null);
   const progressRef = useRef(0);
   const targetProgressRef = useRef(0);
@@ -438,7 +439,17 @@ export default function Home() {
   useEffect(() => {
     if (!profiling) return;
     window.__silencedVoiceProfile = { scene: profileMetrics, longTasks, resources: profileResources };
+    sessionStorage.setItem('silenced-voice-profile', JSON.stringify(window.__silencedVoiceProfile));
   }, [profiling, profileMetrics, longTasks, profileResources]);
+
+  const copyProfile = async () => {
+    const report = window.__silencedVoiceProfile;
+    if (!report) return;
+    try {
+      await navigator.clipboard.writeText(JSON.stringify({ capturedAt: new Date().toISOString(), ...report }, null, 2));
+      setProfileCopied(true);
+    } catch { setProfileCopied(false); }
+  };
 
   const cameraZ = THREE.MathUtils.lerp(PATH_START_Z, PATH_END_Z, progress);
   const currentRoom = chapterForZ(cameraZ);
@@ -573,7 +584,7 @@ export default function Home() {
       {(opening || mode === 'space') && <main key="gallery" className={`space-mode room-${currentRoom} ${opening ? 'is-prewarming' : ''} ${transitioning ? 'is-transitioning' : ''}`}>
       <section className="room-viewport" aria-label="Interactive 3D exhibition. Scroll to walk, drag to look, and click a mounted work to view it full screen." onWheel={walk} onPointerDown={beginDrag} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag}><Suspense fallback={<div className="scene-loader" aria-label="Loading exhibition" />}><LazyExhibitionScene progress={progress} look={look} activeWork={nearest.id} onSelect={setDetail} works={works} chapters={chapters} portalPositions={portalPositions} pathStartZ={PATH_START_Z} pathEndZ={PATH_END_Z} profiling={profiling} onProfile={reportProfile} /></Suspense></section>
       {opening && <div className="gallery-prewarm" role="status" aria-live="polite"><span /><p>Preparing the gallery</p><small>Loading rooms for a smoother first walk</small></div>}
-      {profiling && <aside className="performance-profile" aria-live="polite"><span>Temporary performance profile</span><b>{profileMetrics ? `${profileMetrics.fps} FPS` : 'Starting canvas…'}</b><p>{profileMetrics ? `${profileMetrics.averageFrameMs}ms average · ${profileMetrics.worstFrameMs}ms peak · ${profileMetrics.slowFrames} slow frames` : 'Collecting frame timing'}</p><p>{profileMetrics ? `${profileMetrics.activePanels} panels · ${profileMetrics.textures} GPU textures · ${profileMetrics.drawCalls} draw calls` : 'Waiting for GPU data'}</p><p>{longTasks.count} main-thread long tasks · worst {longTasks.worstMs}ms</p><p>{profileResources.boards} board files · {(profileResources.bytes / 1024 / 1024).toFixed(1)}MB transferred</p></aside>}
+      {profiling && <aside className="performance-profile" aria-live="polite"><span>Temporary performance profile</span><b>{profileMetrics ? `${profileMetrics.fps} FPS` : 'Starting canvas…'}</b><p>{profileMetrics ? `${profileMetrics.averageFrameMs}ms average · ${profileMetrics.worstFrameMs}ms peak · ${profileMetrics.slowFrames} slow frames` : 'Collecting frame timing'}</p><p>{profileMetrics ? `${profileMetrics.activePanels} panels · ${profileMetrics.textures} GPU textures · ${profileMetrics.drawCalls} draw calls` : 'Waiting for GPU data'}</p><p>{longTasks.count} main-thread long tasks · worst {longTasks.worstMs}ms</p><p>{profileResources.boards} board files · {(profileResources.bytes / 1024 / 1024).toFixed(1)}MB transferred</p><button onClick={copyProfile}>{profileCopied ? 'Report copied' : 'Copy report'}</button></aside>}
       <div className="gallery-atmosphere" aria-hidden="true"><span className="atmosphere-orbit" /><span className="atmosphere-beam beam-one" /><span className="atmosphere-beam beam-two" /></div>
       <div className="gallery-readout" aria-hidden="true"><span>EXHIBITION INDEX</span><b>{String(currentRoom + 1).padStart(2, '0')} / {String(chapters.length).padStart(2, '0')}</b><i>Spatial studies · listening architecture</i></div>
       <header className="space-header"><button className="wordmark" onClick={() => setMode('ask')}>Silenced <i>Voices</i></button><span>Room {currentChapter.number} / {currentChapter.title}</span></header>
