@@ -32,7 +32,25 @@ export type ProfileMetrics = {
   drawCalls: number;
   triangles: number;
   textures: number;
+  rendererCpuMsPeak: number;
+  cameraCpuMsPeak: number;
+  decorCpuMsPeak: number;
+  coverCpuMsPeak: number;
 };
+
+type PhaseTimings = { renderer: number; camera: number; decor: number; cover: number };
+const emptyTimings = (): PhaseTimings => ({ renderer: 0, camera: 0, decor: 0, cover: 0 });
+const frameTimings = { enabled: false, current: emptyTimings() };
+
+function beginTimingFrame() {
+  const previous = frameTimings.current;
+  frameTimings.current = emptyTimings();
+  return previous;
+}
+
+function measurePhase(phase: keyof PhaseTimings, startedAt: number) {
+  if (frameTimings.enabled) frameTimings.current[phase] += performance.now() - startedAt;
+}
 
 type SceneProps = {
   progress: number;
@@ -76,6 +94,7 @@ function ArtPanel({ work, active, onSelect }: { work: Work; active: boolean; onS
 
   useFrame(({ camera }, delta) => {
     if (!work.cover || !group.current) return;
+    const startedAt = frameTimings.enabled ? performance.now() : 0;
     const target = THREE.MathUtils.clamp((camera.position.z - work.position[2] - 2.0) / 1.15, 0, 1);
     fade.current = THREE.MathUtils.damp(fade.current, target, 18, delta);
     group.current.visible = fade.current > 0.012;
@@ -94,6 +113,7 @@ function ArtPanel({ work, active, onSelect }: { work: Work; active: boolean; onS
       });
     });
     if (coverLight.current) coverLight.current.intensity = (active || hovered ? 3.2 : 1.15) * fade.current;
+    measurePhase('cover', startedAt);
   });
 
   const select = (event: ThreeEvent<MouseEvent>) => {
@@ -159,8 +179,10 @@ function RoomDecor({ chapter }: { chapter: Chapter }) {
   const accent = accents[chapter.id % accents.length];
   useFrame((_, delta) => {
     if (!sculpture.current) return;
+    const startedAt = frameTimings.enabled ? performance.now() : 0;
     sculpture.current.rotation.y += delta * (chapter.id % 2 === 0 ? 0.12 : -0.12);
     sculpture.current.rotation.z += delta * 0.025;
+    measurePhase('decor', startedAt);
   });
   return <group>
     <group position={[0, 0, z]}>
@@ -195,6 +217,7 @@ function Architecture({ chapters, portalPositions, pathStartZ, pathEndZ, compact
 
 function CameraRig({ progress, look, portalPositions, pathStartZ, pathEndZ }: Pick<SceneProps, 'progress' | 'look' | 'portalPositions' | 'pathStartZ' | 'pathEndZ'>) {
   useFrame(({ camera }, delta) => {
+    const startedAt = frameTimings.enabled ? performance.now() : 0;
     const targetZ = THREE.MathUtils.lerp(pathStartZ, pathEndZ, progress);
     const nearestPortal = Math.min(...portalPositions.map((z) => Math.abs(targetZ - z)));
     const doorway = Math.exp(-Math.pow(nearestPortal / 2.4, 2));
@@ -205,15 +228,35 @@ function CameraRig({ progress, look, portalPositions, pathStartZ, pathEndZ }: Pi
     camera.lookAt(camera.position.x + Math.sin(yaw) * 12, camera.position.y + Math.sin(pitch) * 10, camera.position.z - Math.cos(yaw) * 12);
     const perspectiveCamera = camera as THREE.PerspectiveCamera; const targetFov = 56 + doorway * 8;
     if (Math.abs(perspectiveCamera.fov - targetFov) > 0.02) { perspectiveCamera.fov = THREE.MathUtils.damp(perspectiveCamera.fov, targetFov, 5, delta); perspectiveCamera.updateProjectionMatrix(); }
+    measurePhase('camera', startedAt);
   });
   return null;
 }
 
 function SceneProfiler({ enabled, activePanels, onProfile }: { enabled: boolean; activePanels: number; onProfile?: (metrics: ProfileMetrics) => void }) {
-  const sample = useRef({ startedAt: 0, lastReportAt: 0, frames: 0, totalFrameMs: 0, worstFrameMs: 0, slowFrames: 0 });
+  const sample = useRef({ startedAt: 0, lastReportAt: 0, frames: 0, totalFrameMs: 0, worstFrameMs: 0, slowFrames: 0, rendererCpuMsPeak: 0, cameraCpuMsPeak: 0, decorCpuMsPeak: 0, coverCpuMsPeak: 0 });
+
+  useEffect(() => {
+    if (!enabled) return;
+    frameTimings.enabled = true;
+    const previousAutoReset = gl.info.autoReset;
+    const originalRender = gl.render;
+    gl.info.autoReset = false;
+    gl.render = ((scene, camera) => {
+      const startedAt = performance.now();
+      originalRender.call(gl, scene, camera);
+      measurePhase('renderer', startedAt);
+    }) as THREE.WebGLRenderer['render'];
+    return () => {
+      frameTimings.enabled = false;
+      gl.info.autoReset = previousAutoReset;
+      gl.render = originalRender;
+    };
+  }, [enabled, gl]);
 
   useFrame(({ gl }, delta) => {
     if (!enabled) return;
+    const priorTimings = beginTimingFrame();
     const now = performance.now();
     if (!sample.current.startedAt) sample.current.startedAt = now;
     const frameMs = Math.min(delta * 1000, 1000);
@@ -221,6 +264,10 @@ function SceneProfiler({ enabled, activePanels, onProfile }: { enabled: boolean;
     sample.current.totalFrameMs += frameMs;
     sample.current.worstFrameMs = Math.max(sample.current.worstFrameMs, frameMs);
     if (frameMs > 25) sample.current.slowFrames += 1;
+    sample.current.rendererCpuMsPeak = Math.max(sample.current.rendererCpuMsPeak, priorTimings.renderer);
+    sample.current.cameraCpuMsPeak = Math.max(sample.current.cameraCpuMsPeak, priorTimings.camera);
+    sample.current.decorCpuMsPeak = Math.max(sample.current.decorCpuMsPeak, priorTimings.decor);
+    sample.current.coverCpuMsPeak = Math.max(sample.current.coverCpuMsPeak, priorTimings.cover);
     if (now - sample.current.lastReportAt < 650) return;
 
     const elapsed = Math.max(1, now - sample.current.startedAt);
@@ -233,9 +280,14 @@ function SceneProfiler({ enabled, activePanels, onProfile }: { enabled: boolean;
       drawCalls: gl.info.render.calls,
       triangles: gl.info.render.triangles,
       textures: gl.info.memory.textures,
+      rendererCpuMsPeak: Math.round(sample.current.rendererCpuMsPeak),
+      cameraCpuMsPeak: Math.round(sample.current.cameraCpuMsPeak),
+      decorCpuMsPeak: Math.round(sample.current.decorCpuMsPeak),
+      coverCpuMsPeak: Math.round(sample.current.coverCpuMsPeak),
     });
+    gl.info.reset();
     sample.current.lastReportAt = now;
-  });
+  }, -1000);
 
   return null;
 }
