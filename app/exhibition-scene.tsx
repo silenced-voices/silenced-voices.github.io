@@ -32,14 +32,13 @@ export type ProfileMetrics = {
   drawCalls: number;
   triangles: number;
   textures: number;
-  rendererCpuMsPeak: number;
   cameraCpuMsPeak: number;
   decorCpuMsPeak: number;
   coverCpuMsPeak: number;
 };
 
-type PhaseTimings = { renderer: number; camera: number; decor: number; cover: number };
-const emptyTimings = (): PhaseTimings => ({ renderer: 0, camera: 0, decor: 0, cover: 0 });
+type PhaseTimings = { camera: number; decor: number; cover: number };
+const emptyTimings = (): PhaseTimings => ({ camera: 0, decor: 0, cover: 0 });
 const frameTimings = { enabled: false, current: emptyTimings() };
 
 function beginTimingFrame() {
@@ -234,25 +233,15 @@ function CameraRig({ progress, look, portalPositions, pathStartZ, pathEndZ }: Pi
 }
 
 function SceneProfiler({ enabled, activePanels, onProfile }: { enabled: boolean; activePanels: number; onProfile?: (metrics: ProfileMetrics) => void }) {
-  const sample = useRef({ startedAt: 0, lastReportAt: 0, frames: 0, totalFrameMs: 0, worstFrameMs: 0, slowFrames: 0, rendererCpuMsPeak: 0, cameraCpuMsPeak: 0, decorCpuMsPeak: 0, coverCpuMsPeak: 0 });
+  const sample = useRef({ startedAt: 0, lastReportAt: 0, frames: 0, totalFrameMs: 0, worstFrameMs: 0, slowFrames: 0, cameraCpuMsPeak: 0, decorCpuMsPeak: 0, coverCpuMsPeak: 0 });
 
   useEffect(() => {
     if (!enabled) return;
     frameTimings.enabled = true;
-    const previousAutoReset = gl.info.autoReset;
-    const originalRender = gl.render;
-    gl.info.autoReset = false;
-    gl.render = ((scene, camera) => {
-      const startedAt = performance.now();
-      originalRender.call(gl, scene, camera);
-      measurePhase('renderer', startedAt);
-    }) as THREE.WebGLRenderer['render'];
     return () => {
       frameTimings.enabled = false;
-      gl.info.autoReset = previousAutoReset;
-      gl.render = originalRender;
     };
-  }, [enabled, gl]);
+  }, [enabled]);
 
   useFrame(({ gl }, delta) => {
     if (!enabled) return;
@@ -264,7 +253,6 @@ function SceneProfiler({ enabled, activePanels, onProfile }: { enabled: boolean;
     sample.current.totalFrameMs += frameMs;
     sample.current.worstFrameMs = Math.max(sample.current.worstFrameMs, frameMs);
     if (frameMs > 25) sample.current.slowFrames += 1;
-    sample.current.rendererCpuMsPeak = Math.max(sample.current.rendererCpuMsPeak, priorTimings.renderer);
     sample.current.cameraCpuMsPeak = Math.max(sample.current.cameraCpuMsPeak, priorTimings.camera);
     sample.current.decorCpuMsPeak = Math.max(sample.current.decorCpuMsPeak, priorTimings.decor);
     sample.current.coverCpuMsPeak = Math.max(sample.current.coverCpuMsPeak, priorTimings.cover);
@@ -280,12 +268,10 @@ function SceneProfiler({ enabled, activePanels, onProfile }: { enabled: boolean;
       drawCalls: gl.info.render.calls,
       triangles: gl.info.render.triangles,
       textures: gl.info.memory.textures,
-      rendererCpuMsPeak: Math.round(sample.current.rendererCpuMsPeak),
       cameraCpuMsPeak: Math.round(sample.current.cameraCpuMsPeak),
       decorCpuMsPeak: Math.round(sample.current.decorCpuMsPeak),
       coverCpuMsPeak: Math.round(sample.current.coverCpuMsPeak),
     });
-    gl.info.reset();
     sample.current.lastReportAt = now;
   }, -1000);
 
