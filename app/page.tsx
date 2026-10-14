@@ -44,31 +44,31 @@ const board = (page: number, half: BoardRef['half'], title: string, cover = fals
 
 const chapterSource = [
   { number: '00', short: 'Prologue', title: 'A Personal Beginning', boards: [
-    board(1, 'full', 'Silenced Voices', true), board(2, 'left', 'What I Could Still Say'), board(2, 'right', 'I Want to Turn on the Light'), board(3, 'left', 'When a Person Loses Language, What Else Is Lost?'),
+    board(1, 'full', 'Silenced Voices', true), board(2, 'left', 'My Grandma Still Had Something to Say'), board(2, 'right', 'I Want to Turn on the Light'), board(3, 'left', 'When a Person Loses Language, What Else Is Lost?'),
   ] },
   { number: '01', short: 'Losing a Voice', title: 'Who Is Losing a Voice?', boards: [
-    board(3, 'right', 'Who Is Losing a Voice?', true), board(4, 'left', 'Aphasia Is Not a Refusal to Speak'), board(4, 'right', 'The Thought Remains'), board(5, 'left', 'The Family Caregiver'), board(5, 'right', 'The Rehabilitation Professional'), board(6, 'left', 'Aphasia Is Not an Individual Problem'),
+    board(3, 'right', 'Who Is Losing a Voice?', true), board(4, 'left', 'Aphasia Is Not a Refusal to Speak'), board(4, 'right', '01. The Patient'), board(5, 'left', '02. Family Caregiver'), board(5, 'right', '03. Rehabilitation Professional'), board(6, 'left', 'Losing a Voice Is Not an Individual Problem'),
   ] },
   { number: '02', short: 'The Lost Window', title: 'The Lost Window', boards: [
-    board(6, 'right', 'The Lost Window', true), board(7, 'left', 'Everyday Care'), board(7, 'right', 'Two Timelines'), board(8, 'left', 'The Need to Communicate Does Not Wait'),
+    board(6, 'right', 'The Lost Window', true), board(7, 'left', 'Two Timelines'), board(7, 'right', 'The Need to Communicate Does Not Wait for Therapy'), board(8, 'left', 'Everyday Care'),
   ] },
   { number: '03', short: 'Marginalized', title: 'The Marginalized Treatment', boards: [
-    board(8, 'right', 'The Marginalized Treatment', true), board(9, 'left', 'A Step Can Be Seen'), board(9, 'right', 'Support Shelves'), board(10, 'full', 'Recognition Must Reinforce Itself', false, true),
+    board(8, 'right', 'The Marginalized Treatment', true), board(9, 'left', 'A Step Can Be Seen. An Intention Must Be Understood.'), board(9, 'right', 'Support Shelves'), board(10, 'full', 'How Exclusion Can Reinforce Itself & What Public Support Needs to Recognize', false, true),
   ] },
   { number: '04', short: 'History', title: 'History of Aphasia', boards: [
-    board(11, 'left', 'History of Aphasia', true), board(11, 'right', 'From Localization to Participation'), board(12, 'left', 'When Professional Care Recedes'), board(12, 'right', 'Public Medical Issue Versus Household Problem'), board(13, 'left', 'Recognition Is Not Enough'),
+    board(11, 'left', 'History of Aphasia', true), board(11, 'right', 'From Localization to Participation'), board(12, 'left', 'When Professional Care Recedes, the Family Becomes the System'), board(12, 'right', 'Public Medical Issue Versus Household Problem'), board(13, 'left', 'Recognition Is Not Enough'),
   ] },
   { number: '05', short: 'Gentle Silence', title: 'The Gentle Silence', boards: [
     board(13, 'right', 'The Gentle Silence', true), board(14, 'left', 'I Have Something to Say'), board(14, 'right', 'We Thought This Was Care'), board(15, 'full', 'Fed, Warm, Medicated — Is That Enough?', false, true),
   ] },
   { number: '06', short: 'Field Notes', title: 'Making Silence Visible', boards: [
-    board(16, 'left', 'Field Notes: Making Silence Visible', true), board(16, 'right', 'How Were These Voices Collected?'), board(17, 'left', 'Five Participants, Five Forms of Silence'), board(17, 'right', 'A System Between Expertise and Capacity'), board(18, 'left', 'What the Voices Revealed'), board(18, 'right', 'Scenes Without Sound'),
+    board(16, 'left', 'Field Notes: Making Silence Visible', true), board(16, 'right', 'How Were These Voices Collected?'), board(17, 'left', 'Five Participants, Five Forms of Silence'), board(17, 'right', 'A System Stretched Between Expertise and Capacity'), board(18, 'left', 'Recorded Voices'), board(18, 'right', 'Scenes Without Sound'),
   ] },
   { number: '07', short: 'Rehabilitation', title: 'Rehabilitation', boards: [
-    board(19, 'left', 'Rehabilitation', true), board(19, 'right', 'The Rehabilitation Process'), board(20, 'left', 'Geometry of Training Materials'), board(20, 'right', "The Therapist’s Invisible Labor"), board(21, 'left', 'Please Wait. Let Them Finish.'),
+    board(19, 'left', 'Rehabilitation', true), board(19, 'right', 'The Rehabilitation Process'), board(20, 'left', 'The Poetry of Training Materials'), board(20, 'right', "The Therapist’s Invisible Labor"), board(21, 'left', 'Please Wait. Let Them Finish.'),
   ] },
   { number: '08', short: 'SilentCare', title: 'SilentCare', boards: [
-    board(21, 'right', 'SilentCare', true), board(22, 'left', 'Five Iterations Toward a Wearable System'), board(22, 'right', 'Capacitive Touch and Haptic Feedback'), board(23, 'left', 'From Sensor Data to a State'), board(23, 'right', 'Caregiver Application'),
+    board(21, 'right', 'SilentCare', true), board(22, 'left', 'Building a Wearable System'), board(22, 'right', 'Capacitive Touch and Haptic Feedback'), board(23, 'left', 'From Sensor Data to a Remote State'), board(23, 'right', 'Caregiver Application'),
   ] },
   { number: '09', short: 'Expression', title: 'The Right to Expression', boards: [
     board(24, 'left', 'The Right to Expression', true), board(24, 'right', 'Six Changes a Family Can Begin Today'), board(25, 'left', 'Rehabilitation Should Not End at Discharge'), board(25, 'right', 'Students Can Become Part of the Listening System'), board(26, 'left', 'From One Family to a Public Issue'),
